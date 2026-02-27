@@ -759,18 +759,33 @@ function initOneSignal() {
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(async function(OneSignal) {
         await OneSignal.init({ appId: ONESIGNAL_APP_ID, notifyButton: { enable: false }, allowLocalhostAsSecureOrigin: true });
-        // 구독 변경 이벤트로 ID 캡처 (알림 허용 직후 저장)
+
+        const saveSubId = async () => {
+            const subId = OneSignal.User.PushSubscription.id;
+            if (subId && currentUser) {
+                await sb.from('profiles').update({ onesignal_player_id: subId }).eq('id', currentUser.id);
+                console.log('[OneSignal] 구독 ID 저장됨:', subId);
+                return true;
+            }
+            return false;
+        };
+
+        // 즉시 시도
+        if (!await saveSubId()) {
+            // 알림 허용 후 딜레이 두고 재시도
+            setTimeout(saveSubId, 2000);
+            setTimeout(saveSubId, 5000);
+            setTimeout(saveSubId, 10000);
+        }
+
+        // 구독 변경(알림 허용/거부) 이벤트
         OneSignal.User.PushSubscription.addEventListener('change', async function(event) {
             const subId = event.current?.id;
             if (subId && currentUser) {
                 await sb.from('profiles').update({ onesignal_player_id: subId }).eq('id', currentUser.id);
+                console.log('[OneSignal] 구독 변경 저장됨:', subId);
             }
         });
-        // 이미 구독 중인 경우 즉시 저장
-        const existingId = OneSignal.User.PushSubscription.id;
-        if (existingId && currentUser) {
-            await sb.from('profiles').update({ onesignal_player_id: existingId }).eq('id', currentUser.id);
-        }
     });
 }
 
