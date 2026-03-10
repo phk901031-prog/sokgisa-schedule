@@ -792,8 +792,22 @@ function initOneSignal() {
 async function sendPushNotification(freelancerId, message, title = '속기사 일정 관리') {
     if (!ONESIGNAL_APP_ID || ONESIGNAL_APP_ID === 'YOUR_ONESIGNAL_APP_ID') return;
     try {
-        await sb.functions.invoke('send-push', { body: { freelancer_id: freelancerId, message, title } });
-    } catch (e) { console.log('Push failed (non-blocking):', e); }
+        const res = await fetch(`${SUPABASE_URL}/functions/v1/send-push`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                'apikey': SUPABASE_ANON_KEY,
+            },
+            body: JSON.stringify({ freelancer_id: freelancerId, message, title })
+        });
+        const result = await res.json();
+        console.log('[Push] HTTP상태:', res.status, '결과:', JSON.stringify(result));
+        showToast(`[알림] ${res.status} - ${JSON.stringify(result)}`);
+    } catch (e) {
+        console.error('[Push] 오류:', e);
+        showToast(`[알림오류] ${e}`);
+    }
 }
 
 // ========================
