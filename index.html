@@ -717,17 +717,11 @@ function setupRealtime() {
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'schedules', ...filter }, payload => {
             const s = payload.new;
             if (!schedules.find(x => x.id === s.id)) schedules.push(s);
-            if (currentUser.role === 'freelancer') {
-                showBrowserNotification('📅 새 일정이 등록되었습니다', `${s.title} (${s.date} ${s.time})`);
-            }
             refreshAdminViews();
         })
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'schedules', ...filter }, payload => {
             const idx = schedules.findIndex(x => x.id === payload.new.id);
             if (idx >= 0) schedules[idx] = payload.new;
-            if (currentUser.role === 'freelancer' && payload.new.freelancer_id === currentUser.id) {
-                showBrowserNotification('✏️ 일정이 수정되었습니다', `${payload.new.title} (${payload.new.date})`);
-            }
             refreshAdminViews();
         })
         .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'schedules', ...filter }, payload => {
@@ -758,7 +752,13 @@ function initOneSignal() {
     if (!ONESIGNAL_APP_ID || ONESIGNAL_APP_ID === 'YOUR_ONESIGNAL_APP_ID') return;
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(async function(OneSignal) {
-        await OneSignal.init({ appId: ONESIGNAL_APP_ID, notifyButton: { enable: false }, allowLocalhostAsSecureOrigin: true });
+        await OneSignal.init({
+            appId: ONESIGNAL_APP_ID,
+            notifyButton: { enable: false },
+            allowLocalhostAsSecureOrigin: true,
+            serviceWorkerPath: '/OneSignalSDKWorker.js',
+            serviceWorkerParam: { scope: '/' },
+        });
 
         const saveSubId = async () => {
             const subId = OneSignal.User.PushSubscription.id;
@@ -1137,7 +1137,8 @@ async function addSchedule(event) {
     if (data) {
         schedules.push(...data);
         // 각 날짜별로 푸시 알림 (첫 번째 날짜만)
-        await sendPushNotification(freelancerId, `📅 새 일정이 등록되었습니다\n${title} (${selectedDates[0]} ${dateTimePairs[selectedDates[0]]})`, '속기사 일정 관리');
+        const datesSummary = selectedDates.map(d => `${d} ${dateTimePairs[d]}`).join('\n');
+        await sendPushNotification(freelancerId, `📅 새 일정 ${selectedDates.length}건 등록\n${title}\n${datesSummary}`, '속기사 일정 관리');
     }
     showToast(`${selectedDates.length}건 등록 완료!`);
     closeAddScheduleModal(); event.target.reset();
@@ -1259,6 +1260,9 @@ async function confirmSchedule(id) {
     showLoading(false);
     if (error) { alert('오류: '+error.message); return; }
     if (data) { const idx=schedules.findIndex(s=>s.id===id); if(idx>=0) schedules[idx]=data; }
+    if (data?.created_by) {
+        await sendPushNotification(data.created_by, `✅ ${currentUser.name}님이 일정을 확인했습니다\n${data.title} (${data.date} ${data.time})`, '일정 확인');
+    }
     showToast('일정을 확인했습니다!');
     loadFreelancerSchedules();
 }
@@ -1397,7 +1401,7 @@ async function approveUser(userId, name) {
 async function rejectUser(userId, name) {
     if (!confirm(`${name}님의 가입을 거부하시겠습니까?`)) return;
     showLoading(true);
-    // 소프트 삭제: 역할을 'rejected'로 표시하거나 그냥 삭제
+    await sendPushNotification(userId, `❌ 가입이 거부되었습니다. 관리자에게 문의해 주세요.`, '가입 거부');
     const { error } = await sb.from('profiles').delete().eq('id', userId);
     showLoading(false);
     if (error) { alert('오류: '+error.message); return; }
