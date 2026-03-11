@@ -111,7 +111,9 @@
         .status-badge{padding:4px 12px;border-radius:12px;font-size:12px;font-weight:700}
         .status-unconfirmed{background:#ffebee;color:#c62828}
         .status-confirmed{background:#fff3e0;color:#ef6c00}
-        .status-completed{background:#e8f5e9;color:#2e7d32}
+        .status-arrived{background:#e3f2fd;color:#1565c0}
+        .status-completed{background:#f3e5f5;color:#6a1b9a}
+        .status-transcription_done{background:#e8f5e9;color:#2e7d32}
 
         /* 모달 */
         .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}
@@ -278,8 +280,8 @@
             <div class="stats" style="margin-bottom:0;flex:1;min-width:280px">
                 <div class="stat-card"><div class="stat-number" id="totalSchedules">0</div><div class="stat-label">총 일정</div></div>
                 <div class="stat-card"><div class="stat-number" id="unconfirmedCount">0</div><div class="stat-label">미확인</div></div>
-                <div class="stat-card"><div class="stat-number" id="confirmedCount">0</div><div class="stat-label">확인 완료</div></div>
-                <div class="stat-card"><div class="stat-number" id="completedCount">0</div><div class="stat-label">참석 완료</div></div>
+                <div class="stat-card"><div class="stat-number" id="confirmedCount">0</div><div class="stat-label">일정확인</div></div>
+                <div class="stat-card"><div class="stat-number" id="completedCount">0</div><div class="stat-label">번문완료</div></div>
             </div>
             <div style="display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap">
                 <button class="btn btn-primary" onclick="openAddScheduleModal()">+ 새 일정 등록</button>
@@ -307,9 +309,11 @@
         <!-- 상태 필터 -->
         <div class="filter-section">
             <button class="btn btn-outline active" onclick="filterSchedules('all',event)">전체</button>
-            <button class="btn btn-outline" onclick="filterSchedules('unconfirmed',event)">미확인만</button>
-            <button class="btn btn-outline" onclick="filterSchedules('confirmed',event)">확인 완료만</button>
-            <button class="btn btn-outline" onclick="filterSchedules('completed',event)">참석 완료만</button>
+            <button class="btn btn-outline" onclick="filterSchedules('unconfirmed',event)">미확인</button>
+            <button class="btn btn-outline" onclick="filterSchedules('confirmed',event)">일정확인</button>
+            <button class="btn btn-outline" onclick="filterSchedules('arrived',event)">현장도착</button>
+            <button class="btn btn-outline" onclick="filterSchedules('completed',event)">회의종료</button>
+            <button class="btn btn-outline" onclick="filterSchedules('transcription_done',event)">번문완료</button>
         </div>
 
         <!-- 속기사 선택 -->
@@ -406,9 +410,20 @@
                 </select>
             </div>
             <div class="form-group" style="margin-bottom:16px">
-                <label>회의명 (교육지원청명)</label>
-                <input type="text" id="scheduleTitle" required placeholder="예: 천안교육지원청" list="meetingList">
-                <datalist id="meetingList"></datalist>
+                <label>교육지원청 선택</label>
+                <div style="display:flex;gap:8px;align-items:center">
+                    <select id="scheduleTitleSelect" onchange="onLocationSelect()" style="flex:1;padding:9px;border:1px solid #ddd;border-radius:6px;font-size:14px">
+                        <option value="">선택하세요</option>
+                    </select>
+                    <button type="button" class="btn btn-outline" onclick="showAddLocationInput()" style="white-space:nowrap;padding:9px 12px">+ 추가</button>
+                </div>
+                <input type="hidden" id="scheduleTitle">
+                <div id="addLocationRow" style="display:none;margin-top:8px;display:none">
+                    <div style="display:flex;gap:8px">
+                        <input type="text" id="newLocationInput" placeholder="새 교육지원청명 입력" style="flex:1;padding:9px;border:1px solid #ddd;border-radius:6px;font-size:14px">
+                        <button type="button" class="btn btn-primary" onclick="saveNewLocation()" style="white-space:nowrap">저장</button>
+                    </div>
+                </div>
             </div>
             <div class="form-group" style="margin-bottom:16px">
                 <label>날짜 선택 (여러 날짜 동시 선택 가능)</label>
@@ -961,7 +976,7 @@ function updateStats() {
     el('totalSchedules').textContent   = arr.length;
     el('unconfirmedCount').textContent = arr.filter(s => s.status==='unconfirmed').length;
     el('confirmedCount').textContent   = arr.filter(s => s.status==='confirmed').length;
-    el('completedCount').textContent   = arr.filter(s => s.status==='completed').length;
+    el('completedCount').textContent   = arr.filter(s => s.status==='transcription_done').length;
 }
 
 // ========================
@@ -995,7 +1010,7 @@ function renderTodaySchedules() {
     const listEl = el('todayScheduleList');
     listEl.innerHTML = '';
     if (arr.length===0) { listEl.innerHTML='<div style="color:#999;font-size:14px;padding:6px 0">오늘 예정된 일정이 없습니다.</div>'; return; }
-    const cfg = { unconfirmed:{color:'#ff5252',icon:'🔴',text:'미확인'}, confirmed:{color:'#4caf50',icon:'🟢',text:'확인완료'}, completed:{color:'#2196f3',icon:'🔵',text:'참석완료'} };
+    const cfg = { unconfirmed:{color:'#ff5252',icon:'🔴',text:'미확인'}, confirmed:{color:'#ff9800',icon:'🟡',text:'일정확인'}, arrived:{color:'#2196f3',icon:'🔵',text:'현장도착'}, completed:{color:'#9c27b0',icon:'🟣',text:'회의종료'}, transcription_done:{color:'#4caf50',icon:'🟢',text:'번문완료'} };
     arr.forEach(s => {
         const c = cfg[s.status];
         const d = document.createElement('div');
@@ -1063,7 +1078,7 @@ function showDateDetail(dateStr, daySchedules) {
     if (!daySchedules.length) { contentEl.innerHTML='<div style="padding:40px;text-align:center;color:#999">이 날짜에 등록된 일정이 없습니다.</div>'; }
     else {
         daySchedules.sort((a,b)=>a.time.localeCompare(b.time));
-        const stCfg = { unconfirmed:{color:'#ff5252',icon:'🔴',text:'미확인'}, confirmed:{color:'#ff9800',icon:'🟡',text:'확인완료'}, completed:{color:'#4caf50',icon:'🟢',text:'참석완료'} };
+        const stCfg = { unconfirmed:{color:'#ff5252',icon:'🔴',text:'미확인'}, confirmed:{color:'#ff9800',icon:'🟡',text:'일정확인'}, arrived:{color:'#2196f3',icon:'🔵',text:'현장도착'}, completed:{color:'#9c27b0',icon:'🟣',text:'회의종료'}, transcription_done:{color:'#4caf50',icon:'🟢',text:'번문완료'} };
         daySchedules.forEach(s => {
             const st = stCfg[s.status];
             const card = document.createElement('div');
@@ -1138,6 +1153,7 @@ async function addSchedule(event) {
     const freelancerName = sel.options[sel.selectedIndex]?.text || '';
     const title = el('scheduleTitle').value.trim();
     const memo  = el('scheduleMemo').value.trim();
+    if (!title) { alert('교육지원청을 선택해주세요.'); return; }
     if (!selectedDates.length) { alert('날짜를 선택해주세요.'); return; }
     for (const d of selectedDates) { if (!dateTimePairs[d]) { alert(`${d} 날짜의 시간을 설정해주세요.`); return; } }
     // 중복 체크
@@ -1260,8 +1276,10 @@ function loadFreelancerSchedules() {
             }
         } else {
             if (s.status==='unconfirmed') actionHTML=`<button class="btn btn-secondary" onclick="confirmSchedule(${s.id})">✅ 일정 확인</button>`;
-            else if (s.status==='confirmed' && isToday) actionHTML=`<span style="color:#4CAF50;margin-right:8px">✅ 확인 완료</span><button class="btn btn-primary" onclick="startMeeting(${s.id})">▶️ 회의 시작</button>`;
-            else if (s.status==='confirmed') actionHTML=`<span style="color:#4CAF50">✅ 확인 완료</span>`;
+            else if (s.status==='confirmed') actionHTML=`<span style="color:#ff9800;margin-right:8px">✅ 일정 확인 완료</span><button class="btn btn-primary" onclick="arriveVenue(${s.id})">📍 현장 도착</button>`;
+            else if (s.status==='arrived') actionHTML=`<span style="color:#2196f3;margin-right:8px">📍 현장 도착 완료</span><button class="btn btn-primary" onclick="endMeeting(${s.id})">⏹️ 회의 종료</button>`;
+            else if (s.status==='completed') actionHTML=`<span style="color:#9c27b0;margin-right:8px">⏹️ 회의 종료 완료</span><button class="btn btn-success" onclick="completeTranscription(${s.id})">📝 번문 완료</button>`;
+            else if (s.status==='transcription_done') actionHTML=`<span style="color:#4caf50">✔️ 번문 완료</span>`;
         }
         item.innerHTML=`<div class="schedule-header"><div class="schedule-title">${s.title}</div></div><div class="schedule-date">📅 ${s.date} ${s.time}</div>${s.memo?`<div style="margin-top:8px;color:#666;font-size:14px">📝 ${s.memo}</div>`:''}${timeLogHTML}<div class="action-buttons">${actionHTML}</div>`;
         listEl.appendChild(item);
@@ -1275,23 +1293,35 @@ async function confirmSchedule(id) {
     showLoading(false);
     if (error) { alert('오류: '+error.message); return; }
     if (data) { const idx=schedules.findIndex(s=>s.id===id); if(idx>=0) schedules[idx]=data; }
-    if (data?.created_by) {
-        await sendPushNotification(data.created_by, `✅ ${currentUser.name}님이 일정을 확인했습니다\n${data.title} (${data.date} ${data.time})`, '일정 확인');
-    }
+    if (data?.created_by) await sendPushNotification(data.created_by, `✅ ${currentUser.name}님이 일정을 확인했습니다\n${data.title} (${data.date} ${data.time})`, '일정 확인');
     showToast('일정을 확인했습니다!');
     loadFreelancerSchedules();
 }
 
-async function startMeeting(id) {
-    if (!confirm('회의를 시작하시겠습니까?')) return;
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString('ko-KR',{hour12:false,hour:'2-digit',minute:'2-digit'});
-    ongoingMeetings[id] = { startTime: now.toISOString(), breaks:[], isPaused:false };
-    // DB에 진행 중 상태 저장
-    await sb.from('schedules').update({ time_log:{ startTime:timeStr, endTime:null, breaks:[], totalMinutes:0, totalWorkMinutes:0 } }).eq('id',id);
-    showToast(`회의 시작: ${timeStr}`);
+async function arriveVenue(id) {
+    if (!confirm('현장에 도착하셨나요?')) return;
+    showLoading(true);
+    const { data, error } = await sb.from('schedules').update({ status:'arrived' }).eq('id', id).select().single();
+    showLoading(false);
+    if (error) { alert('오류: '+error.message); return; }
+    if (data) { const idx=schedules.findIndex(s=>s.id===id); if(idx>=0) schedules[idx]=data; }
+    if (data?.created_by) await sendPushNotification(data.created_by, `📍 ${currentUser.name}님이 현장에 도착했습니다\n${data.title} (${data.date} ${data.time})`, '현장 도착');
+    showToast('현장 도착이 확인되었습니다!');
     loadFreelancerSchedules();
 }
+
+async function completeTranscription(id) {
+    if (!confirm('번문을 완료하셨나요?')) return;
+    showLoading(true);
+    const { data, error } = await sb.from('schedules').update({ status:'transcription_done' }).eq('id', id).select().single();
+    showLoading(false);
+    if (error) { alert('오류: '+error.message); return; }
+    if (data) { const idx=schedules.findIndex(s=>s.id===id); if(idx>=0) schedules[idx]=data; }
+    if (data?.created_by) await sendPushNotification(data.created_by, `📝 ${currentUser.name}님이 번문을 완료했습니다\n${data.title} (${data.date} ${data.time})`, '번문 완료');
+    showToast('번문 완료 처리되었습니다!');
+    loadFreelancerSchedules();
+}
+
 
 async function pauseMeeting(id) {
     if (!confirm('정회를 시작하시겠습니까?')) return;
@@ -1315,24 +1345,15 @@ async function resumeMeeting(id) {
 async function endMeeting(id) {
     if (!confirm('회의를 종료하시겠습니까?')) return;
     const now = new Date();
-    const timeStr = now.toLocaleTimeString('ko-KR',{hour12:false,hour:'2-digit',minute:'2-digit'});
-    const ongoing = ongoingMeetings[id];
-    const s = schedules.find(x=>x.id===id);
-    if (ongoing.isPaused) ongoing.breaks[ongoing.breaks.length-1].end = timeStr;
-    const startMs = new Date(ongoing.startTime);
-    const totalMin = Math.floor((now-startMs)/60000);
-    let breakMin=0;
-    ongoing.breaks.forEach(b=>{ if(b.start&&b.end){ const bs=new Date(`${s.date} ${b.start}`),be=new Date(`${s.date} ${b.end}`); breakMin+=Math.floor((be-bs)/60000); }});
-    const workMin = totalMin-breakMin;
-    const startStr = startMs.toLocaleTimeString('ko-KR',{hour12:false,hour:'2-digit',minute:'2-digit'});
-    const timeLog = { startTime:startStr, endTime:timeStr, breaks:ongoing.breaks, totalMinutes:totalMin, totalWorkMinutes:workMin };
+    const pad = n => String(n).padStart(2,'0');
+    const timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
     showLoading(true);
-    const { data, error } = await sb.from('schedules').update({ status:'completed', time_log:timeLog }).eq('id',id).select().single();
+    const { data, error } = await sb.from('schedules').update({ status:'completed', time_log:{ endTime:timeStr } }).eq('id',id).select().single();
     showLoading(false);
     if (error) { alert('저장 오류: '+error.message); return; }
     if (data) { const idx=schedules.findIndex(x=>x.id===id); if(idx>=0) schedules[idx]=data; }
-    delete ongoingMeetings[id];
-    showToast(`회의 종료! 실제 근무: ${Math.floor(workMin/60)}시간 ${workMin%60}분`);
+    if (data?.created_by) await sendPushNotification(data.created_by, `⏹️ ${currentUser.name}님이 회의를 종료했습니다\n${data.title} (${data.date} ${timeStr})`, '회의 종료');
+    showToast('회의가 종료되었습니다!');
     loadFreelancerSchedules();
 }
 
@@ -1503,12 +1524,56 @@ function loadFreelancerOptions() {
     if(adminSel){ const cv=adminSel.value; adminSel.innerHTML='<option value="">전체 보기</option>'; freelancerProfiles.forEach(p=>{ const o=document.createElement('option'); o.value=p.id; o.textContent=p.name; adminSel.appendChild(o); }); if(cv) adminSel.value=cv; }
 }
 
+// ========================
+// 교육지원청 관리
+// ========================
+let locationList = [];
+
+function loadLocations() {
+    const saved = localStorage.getItem('locationList');
+    locationList = saved ? JSON.parse(saved) : ['천안교육지원청','아산교육지원청','공주교육지원청','논산계룡교육지원청','서산교육지원청','홍성교육지원청','당진교육지원청','보령교육지원청','서천교육지원청','태안교육지원청','예산교육지원청','청양교육지원청','금산교육지원청','부여교육지원청','세종특별자치시교육청'];
+    renderLocationSelect();
+}
+
+function renderLocationSelect() {
+    const sel = el('scheduleTitleSelect');
+    const cur = el('scheduleTitle').value;
+    sel.innerHTML = '<option value="">선택하세요</option>';
+    locationList.forEach(loc => {
+        sel.innerHTML += `<option value="${loc}"${loc===cur?' selected':''}>${loc}</option>`;
+    });
+}
+
+function onLocationSelect() {
+    el('scheduleTitle').value = el('scheduleTitleSelect').value;
+}
+
+function showAddLocationInput() {
+    const row = el('addLocationRow');
+    row.style.display = row.style.display === 'none' ? 'block' : 'none';
+}
+
+function saveNewLocation() {
+    const val = el('newLocationInput').value.trim();
+    if (!val) { alert('교육지원청명을 입력하세요.'); return; }
+    if (locationList.includes(val)) { alert('이미 등록된 항목입니다.'); return; }
+    locationList.push(val);
+    localStorage.setItem('locationList', JSON.stringify(locationList));
+    renderLocationSelect();
+    el('scheduleTitleSelect').value = val;
+    el('scheduleTitle').value = val;
+    el('newLocationInput').value = '';
+    el('addLocationRow').style.display = 'none';
+    showToast(`'${val}' 추가되었습니다.`);
+}
+
 function openAddScheduleModal() {
     el('addScheduleModal').classList.add('show');
     selectedDates=[]; dateTimePairs={}; bulkDate=new Date();
-    loadFreelancerOptions(); renderBulkDateSelector(); updateSelectedDatesDisplay();
-    el('scheduleTitle').value=''; el('scheduleMemo').value='';
+    loadFreelancerOptions(); loadLocations(); renderBulkDateSelector(); updateSelectedDatesDisplay();
+    el('scheduleTitle').value=''; el('scheduleTitleSelect').value=''; el('scheduleMemo').value='';
     el('timeSettingsContainer').style.display='none';
+    el('addLocationRow').style.display='none';
 }
 function closeAddScheduleModal() { el('addScheduleModal').classList.remove('show'); selectedDates=[]; dateTimePairs={}; el('timeSettingsContainer').style.display='none'; }
 
@@ -1562,7 +1627,10 @@ function renderTimeSettings() {
 
 function genTimeOpts(dateStr) {
     let html=''; const cur=dateTimePairs[dateStr]||'';
-    for(let h=6;h<=23;h++) for(let m=0;m<60;m+=30){ const t=`${pad(h)}:${pad(m)}`; html+=`<option value="${t}"${t===cur?' selected':''}>${t}</option>`; }
+    for(let h=9;h<=20;h++) for(let m=0;m<60;m+=30){
+        if(h===20 && m>0) break;
+        const t=`${pad(h)}:${pad(m)}`; html+=`<option value="${t}"${t===cur?' selected':''}>${t}</option>`;
+    }
     return html;
 }
 
@@ -1591,7 +1659,7 @@ function buildCalendarSheet(year, month, arr) {
     const byDate={};
     arr.forEach(s=>{ if(!byDate[s.date]) byDate[s.date]=[]; byDate[s.date].push(s); });
     Object.values(byDate).forEach(a=>a.sort((x,y)=>x.time.localeCompare(y.time)));
-    const stMark={unconfirmed:'▲',confirmed:'◎',completed:'★'};
+    const stMark={unconfirmed:'▲',confirmed:'◎',arrived:'●',completed:'◆',transcription_done:'★'};
     const aoa=[], merges=[];
     aoa.push([`${year}년 ${month+1}월 속기사 출장 일정`,'','','','','','']);
     merges.push({s:{r:0,c:0},e:{r:0,c:6}});
