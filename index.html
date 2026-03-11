@@ -209,16 +209,12 @@
     </div>
     <div class="error-message" id="loginError"></div>
     <form class="login-form" onsubmit="handleLogin(event)">
-        <div class="form-group"><label>아이디 (이름)</label><input type="text" id="loginUsername" required placeholder="이름을 입력하세요" autocomplete="username"></div>
+        <div class="form-group"><label>전화번호</label><input type="tel" id="loginUsername" required placeholder="010-1234-5678" autocomplete="username"></div>
         <div class="form-group"><label>비밀번호</label><input type="password" id="loginPassword" required placeholder="비밀번호를 입력하세요" autocomplete="current-password"></div>
         <button type="submit" class="login-btn" id="loginBtn">로그인</button>
     </form>
     <div style="text-align:center;margin-top:14px">
         <button onclick="showSignupScreen()" style="background:none;border:none;color:#2196F3;cursor:pointer;text-decoration:underline;font-size:14px">속기사 회원가입</button>
-    </div>
-    <div class="demo-accounts">
-        <p><strong>로그인 방식:</strong> 이름(한글) + 비밀번호</p>
-        <p>관리자 계정은 Supabase에서 직접 생성합니다.</p>
     </div>
 </div>
 
@@ -230,8 +226,8 @@
     </div>
     <div class="error-message" id="signupError"></div>
     <form class="login-form" onsubmit="handleSignup(event)">
-        <div class="form-group"><label>이름 (로그인 아이디로 사용)</label><input type="text" id="signupName" required placeholder="실명을 입력하세요"></div>
-        <div class="form-group"><label>전화번호</label><input type="tel" id="signupPhone" required placeholder="010-1234-5678"></div>
+        <div class="form-group"><label>이름</label><input type="text" id="signupName" required placeholder="실명을 입력하세요"></div>
+        <div class="form-group"><label>전화번호 (로그인 아이디로 사용)</label><input type="tel" id="signupPhone" required placeholder="010-1234-5678"></div>
         <div class="form-group"><label>비밀번호</label><input type="password" id="signupPassword" required placeholder="비밀번호 (6자 이상)"></div>
         <div class="form-group"><label>비밀번호 확인</label><input type="password" id="signupPasswordConfirm" required placeholder="비밀번호를 다시 입력하세요"></div>
         <button type="submit" class="login-btn">가입 신청</button>
@@ -628,15 +624,18 @@ async function loadSessionUser(userId) {
 // ========================
 async function handleLogin(event) {
     event.preventDefault();
-    const name = document.getElementById('loginUsername').value.trim();
+    const input = document.getElementById('loginUsername').value.trim();
     const password = document.getElementById('loginPassword').value;
-    if (!name) return;
-    const email = `${encodeURIComponent(name)}@${APP_EMAIL_DOMAIN}`;
+    if (!input) return;
+    // admin은 특수 케이스, 그 외는 전화번호(숫자만) 기반 이메일 변환
+    const email = input === 'admin'
+        ? `admin@${APP_EMAIL_DOMAIN}`
+        : `${input.replace(/[-\s]/g, '')}@${APP_EMAIL_DOMAIN}`;
     showLoading(true);
     const { data, error } = await sb.auth.signInWithPassword({ email, password });
     showLoading(false);
     if (error) {
-        showFieldError('loginError', error.message || '아이디 또는 비밀번호가 올바르지 않습니다.');
+        showFieldError('loginError', '전화번호 또는 비밀번호가 올바르지 않습니다.');
         return;
     }
     await loadSessionUser(data.user.id);
@@ -651,8 +650,12 @@ async function handleSignup(event) {
     if (password !== confirm) { showFieldError('signupError', '비밀번호가 일치하지 않습니다.'); return; }
     if (password.length < 6)  { showFieldError('signupError', '비밀번호는 6자 이상이어야 합니다.'); return; }
 
+    const phoneNormalized = phone.replace(/[-\s]/g, '');
+    if (!/^010\d{8}$/.test(phoneNormalized)) {
+        showFieldError('signupError', '올바른 전화번호를 입력하세요. (예: 010-1234-5678)'); return;
+    }
     showLoading(true);
-    const email = `${encodeURIComponent(name)}@${APP_EMAIL_DOMAIN}`;
+    const email = `${phoneNormalized}@${APP_EMAIL_DOMAIN}`;
     const { data, error } = await sb.auth.signUp({
         email, password,
         options: { data: { name, phone, role: 'freelancer', approved: false } }
@@ -660,10 +663,9 @@ async function handleSignup(event) {
     showLoading(false);
 
     if (error) {
-        const msg = error.message.includes('already') ? '이미 가입된 이름입니다.' : '가입 중 오류가 발생했습니다.';
+        const msg = error.message.includes('already') ? '이미 가입된 전화번호입니다.' : '가입 중 오류가 발생했습니다.';
         showFieldError('signupError', msg); return;
     }
-    // 프로필이 트리거로 자동 생성되지만 phone은 수동 업데이트 필요
     if (data?.user) {
         await sb.from('profiles').update({ phone }).eq('id', data.user.id);
     }
@@ -792,21 +794,20 @@ function initOneSignal() {
 async function sendPushNotification(freelancerId, message, title = '속기사 일정 관리') {
     if (!ONESIGNAL_APP_ID || ONESIGNAL_APP_ID === 'YOUR_ONESIGNAL_APP_ID') return;
     try {
-        const res = await fetch(`${SUPABASE_URL}/functions/v1/send-push`, {
+        const { data: { session } } = await sb.auth.getSession();
+        const token = session?.access_token;
+        if (!token) return;
+        await fetch(`${SUPABASE_URL}/functions/v1/send-push`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                'Authorization': `Bearer ${token}`,
                 'apikey': SUPABASE_ANON_KEY,
             },
             body: JSON.stringify({ freelancer_id: freelancerId, message, title })
         });
-        const result = await res.json();
-        console.log('[Push] HTTP상태:', res.status, '결과:', JSON.stringify(result));
-        showToast(`[알림] ${res.status} - ${JSON.stringify(result)}`);
     } catch (e) {
-        console.error('[Push] 오류:', e);
-        showToast(`[알림오류] ${e}`);
+        console.log('Push failed:', e);
     }
 }
 
