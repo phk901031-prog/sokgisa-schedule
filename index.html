@@ -416,6 +416,7 @@
                         <option value="">선택하세요</option>
                     </select>
                     <button type="button" class="btn btn-outline" onclick="showAddLocationInput()" style="white-space:nowrap;padding:9px 12px">+ 추가</button>
+                    <button type="button" class="btn btn-outline" onclick="deleteLocation()" style="white-space:nowrap;padding:9px 12px;color:#c62828;border-color:#c62828">- 삭제</button>
                 </div>
                 <input type="hidden" id="scheduleTitle">
                 <div id="addLocationRow" style="display:none;margin-top:8px;display:none">
@@ -1545,6 +1546,17 @@ function onLocationSelect() {
 function showAddLocationInput() {
     const row = el('addLocationRow');
     row.style.display = row.style.display === 'none' ? 'block' : 'none';
+}
+
+function deleteLocation() {
+    const val = el('scheduleTitleSelect').value;
+    if (!val) { alert('삭제할 교육지원청을 먼저 선택해주세요.'); return; }
+    if (!confirm(`'${val}'을(를) 목록에서 삭제하시겠습니까?`)) return;
+    locationList = locationList.filter(loc => loc !== val);
+    localStorage.setItem('locationList', JSON.stringify(locationList));
+    renderLocationSelect();
+    el('scheduleTitle').value = '';
+    showToast(`'${val}' 삭제되었습니다.`);
 }
 
 function saveNewLocation() {
