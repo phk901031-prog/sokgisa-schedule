@@ -137,12 +137,20 @@
             <button class="btn btn-outline" onclick="filterSchedules('submitted',event)">제출완료</button>
         </div>
 
-        <!-- 속기사 선택 -->
-        <div style="margin:16px 0">
-            <label style="font-weight:500;color:#666;margin-right:8px">속기사 선택:</label>
-            <select id="adminFreelancerSelect" onchange="filterByFreelancer()" style="padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:14px">
-                <option value="">전체 보기</option>
-            </select>
+        <!-- 속기사 / 교육지원청 선택 -->
+        <div style="margin:16px 0;display:flex;gap:16px;flex-wrap:wrap;align-items:center">
+            <div>
+                <label style="font-weight:500;color:#666;margin-right:8px">속기사 선택:</label>
+                <select id="adminFreelancerSelect" onchange="filterByFreelancer()" style="padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:14px">
+                    <option value="">전체 보기</option>
+                </select>
+            </div>
+            <div>
+                <label style="font-weight:500;color:#666;margin-right:8px">교육지원청 선택:</label>
+                <select id="adminLocationSelect" onchange="filterByLocation()" style="padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:14px">
+                    <option value="">전체 보기</option>
+                </select>
+            </div>
         </div>
 
         <!-- 속기사 요약 -->

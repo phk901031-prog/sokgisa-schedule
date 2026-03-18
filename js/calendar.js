@@ -7,6 +7,7 @@ function renderTodaySchedules() {
     el('todayDate').textContent = `(${mn}월 ${dy}일 ${dn}요일)`;
     let arr = schedules.filter(s => s.date===todayStr);
     if (selectedFreelancer) arr = arr.filter(s => s.freelancer_id===selectedFreelancer);
+    if (selectedLocation) arr = arr.filter(s => s.title===selectedLocation);
     arr = applySearchFilter(arr);
     const listEl = el('todayScheduleList');
     listEl.innerHTML = '';
@@ -44,6 +45,7 @@ function renderCalendar() {
         const dateStr = `${year}-${pad(month+1)}-${pad(date)}`;
         let daySchedules = schedules.filter(s => s.date===dateStr);
         if (isAdmin && selectedFreelancer) daySchedules = daySchedules.filter(s => s.freelancer_id===selectedFreelancer);
+        if (isAdmin && selectedLocation) daySchedules = daySchedules.filter(s => s.title===selectedLocation);
         if (!isAdmin && currentUser.role==='freelancer') daySchedules = daySchedules.filter(s => s.freelancer_id===currentUser.id);
         daySchedules = applySearchFilter(daySchedules);
         const dayEl = document.createElement('div');

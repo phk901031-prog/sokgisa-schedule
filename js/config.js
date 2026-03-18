@@ -24,6 +24,7 @@ let currentDate      = new Date();
 let currentView      = 'admin';
 let currentFilter    = 'all';
 let selectedFreelancer = '';
+let selectedLocation   = '';
 let searchQuery      = '';
 let dateRangeFilter  = { type: 'all', startDate: null, endDate: null };
 let bulkDate         = new Date();

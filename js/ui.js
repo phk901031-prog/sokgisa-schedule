@@ -44,6 +44,7 @@ function switchViewInternal(view) {
     if (view === 'admin') {
         show('adminView');
         loadFreelancerOptions();
+        loadLocationOptions();
         renderTodaySchedules(); renderCalendar(); renderScheduleList(); updateStats();
     } else if (view === 'freelancer') {
         show('freelancerView');
@@ -94,6 +95,26 @@ function filterByFreelancer() {
     renderTodaySchedules(); renderCalendar(); renderScheduleList();
 }
 
+function filterByLocation() {
+    selectedLocation = document.getElementById('adminLocationSelect').value;
+    renderTodaySchedules(); renderCalendar(); renderScheduleList();
+}
+
+function loadLocationOptions() {
+    const sel = document.getElementById('adminLocationSelect');
+    if (!sel) return;
+    const current = sel.value;
+    const locations = [...new Set(schedules.map(s => s.title))].sort();
+    sel.innerHTML = '<option value="">전체 보기</option>';
+    locations.forEach(loc => {
+        const opt = document.createElement('option');
+        opt.value = loc;
+        opt.textContent = loc;
+        sel.appendChild(opt);
+    });
+    sel.value = current;
+}
+
 function setDateRange(type) {
     const today = new Date(); today.setHours(0,0,0,0);
     document.querySelectorAll('[id^="dateRange-"]').forEach(b => b.classList.remove('active'));
@@ -136,6 +157,7 @@ function getFilteredSchedules() {
         arr = arr.filter(s => s.date >= dateRangeFilter.startDate && s.date <= dateRangeFilter.endDate);
     }
     if (selectedFreelancer) arr = arr.filter(s => s.freelancer_id === selectedFreelancer);
+    if (selectedLocation) arr = arr.filter(s => s.title === selectedLocation);
     if (currentFilter !== 'all') arr = arr.filter(s => s.status === currentFilter);
     return applySearchFilter(arr);
 }

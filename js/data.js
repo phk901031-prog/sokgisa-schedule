@@ -51,6 +51,7 @@ function setupRealtime() {
 
 function refreshAdminViews() {
     if (currentView === 'admin') {
+        loadLocationOptions();
         renderTodaySchedules(); renderCalendar(); renderScheduleList(); updateStats();
     } else if (currentView === 'freelancer') {
         loadFreelancerSchedules();
