@@ -39,7 +39,7 @@ function switchView(view) {
 function switchViewInternal(view) {
     currentView = view;
     hide('adminView'); hide('freelancerView'); hide('usersView'); hide('adminsView');
-    const titles = { admin:'관리자 대시보드', freelancer:'내 일정', users:'회원 관리', admins:'관리자 관리' };
+    const titles = { admin:'관리자 대시보드', freelancer:'속기사 일정', users:'회원 관리', admins:'관리자 관리' };
     document.getElementById('pageTitle').textContent = titles[view] || '';
     if (view === 'admin') {
         show('adminView');
