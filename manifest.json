@@ -4,8 +4,8 @@
   "description": "속기사 현장속기 일정 관리 시스템",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#E53935",
-  "theme_color": "#E53935",
+  "background_color": "#2196F3",
+  "theme_color": "#2196F3",
   "orientation": "portrait",
   "icons": [
     {

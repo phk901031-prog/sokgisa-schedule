@@ -1,0 +1,182 @@
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f5;padding:20px}
+
+/* 로딩 오버레이 */
+#loadingOverlay{display:none;position:fixed;inset:0;background:rgba(255,255,255,.85);z-index:9999;align-items:center;justify-content:center;flex-direction:column;gap:16px}
+#loadingOverlay.show{display:flex}
+.spinner{width:44px;height:44px;border:4px solid #e0e0e0;border-top-color:#2196F3;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* 토스트 알림 */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:#333;color:#fff;padding:12px 24px;border-radius:24px;font-size:14px;z-index:9998;transition:transform .3s;white-space:nowrap}
+#toast.show{transform:translateX(-50%) translateY(0)}
+
+/* 로그인 */
+.login-container{max-width:400px;margin:80px auto;background:#fff;border-radius:12px;padding:40px;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+.login-header{text-align:center;margin-bottom:30px}
+.login-header h1{color:#333;font-size:24px;margin-bottom:8px}
+.login-header p{color:#666;font-size:14px}
+.login-form{display:flex;flex-direction:column;gap:20px}
+.form-group{margin-bottom:0}
+.form-group label{display:block;margin-bottom:8px;color:#666;font-weight:500;font-size:14px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:12px;border:1px solid #ddd;border-radius:6px;font-size:14px}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:#2196F3}
+.form-group textarea{resize:vertical;min-height:80px}
+.login-btn{padding:13px;background:#2196F3;color:#fff;border:none;border-radius:6px;font-size:16px;font-weight:500;cursor:pointer;transition:background .2s}
+.login-btn:hover{background:#0b7dda}
+.error-message{background:#ffebee;color:#c62828;padding:10px;border-radius:6px;font-size:14px;margin-bottom:15px;display:none}
+.error-message.show{display:block}
+.demo-accounts{margin-top:24px;padding-top:20px;border-top:1px solid #e0e0e0;font-size:12px;color:#999}
+.demo-accounts p{margin-bottom:6px}
+
+/* 메인 */
+.container{max-width:1200px;margin:0 auto;background:#fff;border-radius:12px;padding:30px;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:30px;padding-bottom:20px;border-bottom:2px solid #e0e0e0;gap:16px;flex-wrap:wrap}
+.header-left h1{color:#333;font-size:24px;margin-bottom:4px}
+.welcome-message{color:#666;font-size:14px}
+.header-right{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.user-toggle{display:flex;gap:8px;flex-wrap:wrap}
+.superadmin-badge{background:#7c3aed;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;margin-left:6px;vertical-align:middle}
+.admin-badge{background:#1976d2;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;margin-left:6px;vertical-align:middle}
+
+/* 검색 */
+.search-wrap{display:flex;align-items:center;gap:8px;margin-bottom:16px}
+.search-input{flex:1;padding:10px 14px;border:1px solid #ddd;border-radius:24px;font-size:14px;outline:none;transition:border-color .2s}
+.search-input:focus{border-color:#2196F3}
+.search-clear{background:none;border:none;color:#999;cursor:pointer;font-size:18px;padding:4px;line-height:1}
+
+/* 버튼 */
+.btn{padding:10px 20px;border:none;border-radius:6px;cursor:pointer;font-size:14px;transition:all .2s;white-space:nowrap}
+.btn-primary{background:#4CAF50;color:#fff}
+.btn-primary:hover{background:#45a049}
+.btn-secondary{background:#2196F3;color:#fff}
+.btn-secondary:hover{background:#0b7dda}
+.btn-outline{background:#fff;color:#666;border:1px solid #ddd}
+.btn-outline:hover{background:#f5f5f5}
+.btn-outline.active{background:#2196F3;color:#fff;border-color:#2196F3}
+.btn-logout{background:#f44336;color:#fff}
+.btn-logout:hover{background:#d32f2f}
+.btn-danger{background:#f44336;color:#fff}
+.btn-danger:hover{background:#d32f2f}
+.btn-purple{background:#7c3aed;color:#fff}
+.btn-purple:hover{background:#6d28d9}
+
+/* 통계 */
+.stats{display:flex;gap:16px;margin-bottom:20px}
+.stat-card{flex:1;background:#f5f5f5;padding:15px;border-radius:8px;text-align:center}
+.stat-number{font-size:24px;font-weight:700;color:#2196F3}
+.stat-label{font-size:12px;color:#666;margin-top:4px}
+
+/* 필터 */
+.filter-section{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+
+/* 캘린더 */
+.calendar{margin:20px 0}
+.calendar-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.calendar-month{font-size:20px;font-weight:700;color:#333}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.calendar-day-header{text-align:center;padding:10px;font-weight:700;color:#666;font-size:14px}
+.calendar-day{border:1px solid #e0e0e0;border-radius:8px;padding:8px;cursor:pointer;transition:all .2s;min-height:80px;position:relative}
+.calendar-day:hover{background:#f5f5f5;border-color:#2196F3}
+.calendar-day.has-event{background:#e3f2fd;border-color:#2196F3}
+.calendar-day.today{border-color:#ff9800;border-width:2px}
+.day-number{font-size:14px;color:#333;margin-bottom:4px}
+.day-number.today-num{color:#ff9800;font-weight:700}
+.event-dot{width:6px;height:6px;background:#2196F3;border-radius:50%;display:inline-block;margin-right:3px}
+.event-preview{font-size:11px;color:#555;margin-top:4px;line-height:1.4}
+
+/* 일정 목록 */
+.schedule-list{margin-top:24px;padding-bottom:60px}
+.schedule-item{background:#f9f9f9;border-left:4px solid #2196F3;padding:15px;margin-bottom:12px;border-radius:6px}
+.schedule-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.schedule-title{font-weight:700;color:#333;font-size:16px}
+.schedule-date{color:#666;font-size:14px}
+.freelancer-view .schedule-item{border-left-color:#4CAF50}
+.action-buttons{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.status-badge{padding:4px 12px;border-radius:12px;font-size:12px;font-weight:700}
+.status-unconfirmed{background:#ffebee;color:#c62828}
+.status-confirmed{background:#fff3e0;color:#ef6c00}
+.status-arrived{background:#e3f2fd;color:#1565c0}
+.status-completed{background:#f3e5f5;color:#6a1b9a}
+.status-transcription_done{background:#e8f5e9;color:#2e7d32}
+.status-submitted{background:#e0f2f1;color:#00695c}
+
+/* 모달 */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}
+.modal.show{display:flex}
+.modal-content{background:#fff;border-radius:12px;padding:30px;max-width:500px;width:90%;max-height:90vh;overflow-y:auto}
+.modal-content.wide{max-width:700px}
+.modal-header{font-size:20px;font-weight:700;margin-bottom:20px;color:#333;display:flex;justify-content:space-between;align-items:center}
+.modal-close{background:none;border:none;font-size:24px;cursor:pointer;color:#666;line-height:1}
+
+/* 회원관리 카드 */
+.user-card{background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:15px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.user-card-info{flex:1;min-width:200px}
+.user-card-name{font-weight:700;color:#333;font-size:16px;margin-bottom:4px}
+.user-card-meta{color:#666;font-size:14px;line-height:1.6}
+.user-card-actions{display:flex;gap:8px;flex-wrap:wrap}
+.role-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;margin-left:6px}
+.role-superadmin{background:#ede9fe;color:#6d28d9}
+.role-admin{background:#dbeafe;color:#1d4ed8}
+.role-freelancer{background:#dcfce7;color:#166534}
+
+/* 오늘 일정 패널 */
+#todaySchedules{background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:15px;margin-bottom:20px}
+#todayScheduleList{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+.today-card{background:#f9f9f9;border-radius:6px;padding:10px 12px;flex:1;min-width:260px;display:flex;align-items:center;gap:8px}
+
+/* 속기사 요약 */
+#freelancerSummary{display:none;background:#f0f7ff;border:2px solid #2196F3;border-radius:8px;padding:15px;margin-bottom:20px}
+
+/* 날짜 범위 필터 */
+.date-range-bar{background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:14px;margin-bottom:14px}
+.date-range-bar>div{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+
+/* 아코디언 */
+@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+
+/* 일괄 날짜 선택 */
+#bulkDateSelector{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+
+/* 반응형 */
+@media(max-width:768px){
+    body{padding:10px}
+    .container{padding:16px 12px;border-radius:8px}
+    .login-container{margin:40px auto;padding:28px 20px}
+    .header{flex-direction:column;gap:12px}
+    .header-right{flex-direction:column;width:100%}
+    .user-toggle{width:100%;justify-content:center}
+    .user-toggle .btn{flex:1;padding:12px;font-size:15px}
+    .btn-logout{width:100%;padding:12px;font-size:15px}
+    .stats{flex-wrap:wrap;gap:8px}
+    .stat-card{min-width:calc(50% - 4px);padding:12px}
+    .stat-number{font-size:20px}
+    .filter-section .btn{flex:1 1 calc(50% - 4px);padding:10px 8px;font-size:13px}
+    .calendar-grid{gap:4px}
+    .calendar-day{min-height:56px;padding:5px}
+    .calendar-day-header{font-size:12px;padding:8px 4px}
+    .day-number{font-size:12px}
+    .event-preview{font-size:9px}
+    .event-dot{width:4px;height:4px}
+    .action-buttons{flex-direction:column}
+    .action-buttons .btn{width:100%;padding:12px}
+    .modal-content{width:96%;padding:22px 16px;max-height:88vh}
+    .modal-content.wide{max-width:96%}
+    .schedule-header{flex-direction:column;align-items:flex-start;gap:6px}
+    .form-group input,.form-group select,.form-group textarea{font-size:16px;padding:12px}
+    .stats .stat-card:nth-child(3),.stats .stat-card:nth-child(4){margin-top:0}
+    h1{font-size:20px}
+    .date-range-bar>div{gap:6px}
+    .date-range-bar .btn{flex:1;font-size:12px;padding:8px 6px}
+    #adminFreelancerSelect{width:100%;padding:12px;font-size:15px}
+    .today-card{min-width:100%}
+    .search-wrap{margin-bottom:12px}
+    .user-card{flex-direction:column}
+}
+@media(max-width:360px){
+    .container{padding:12px 8px}
+    .stat-card{min-width:100%}
+    .filter-section .btn{flex:1 1 100%}
+    .calendar-day{min-height:46px;padding:3px}
+    .day-number{font-size:11px}
+}
