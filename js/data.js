@@ -19,7 +19,7 @@ async function loadProfiles() {
     const { data } = await sb.from('profiles').select('*').order('name');
     if (!data) return;
     allProfiles      = data;
-    freelancerProfiles = data.filter(p => p.role === 'freelancer' && p.approved);
+    freelancerProfiles = data.filter(p => p.approved && (p.role === 'freelancer' || p.role === 'admin' || p.role === 'superadmin'));
     pendingProfiles    = data.filter(p => p.role === 'freelancer' && !p.approved);
     meetingTitlesHistory = [...new Set(schedules.map(s => s.title))].sort();
 }

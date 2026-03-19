@@ -123,7 +123,7 @@ function setDateRange(type) {
         el('dateRange-all').classList.add('active');
         el('dateRangeDisplay').textContent = '';
     } else if (type === 'today') {
-        const d = today.toISOString().split('T')[0];
+        const d = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}`;
         dateRangeFilter = { type:'today', startDate:d, endDate:d };
         el('dateRange-today').classList.add('active');
         el('dateRangeDisplay').textContent = `오늘 (${today.getMonth()+1}월 ${today.getDate()}일)`;
@@ -131,13 +131,17 @@ function setDateRange(type) {
         const dow = today.getDay(), diff = dow===0 ? -6 : 1-dow;
         const mon = new Date(today); mon.setDate(today.getDate()+diff);
         const sun = new Date(mon); sun.setDate(mon.getDate()+6);
-        dateRangeFilter = { type:'week', startDate:mon.toISOString().split('T')[0], endDate:sun.toISOString().split('T')[0] };
+        const monStr = `${mon.getFullYear()}-${pad(mon.getMonth()+1)}-${pad(mon.getDate())}`;
+        const sunStr = `${sun.getFullYear()}-${pad(sun.getMonth()+1)}-${pad(sun.getDate())}`;
+        dateRangeFilter = { type:'week', startDate:monStr, endDate:sunStr };
         el('dateRange-week').classList.add('active');
         el('dateRangeDisplay').textContent = `이번 주 (${mon.getMonth()+1}/${mon.getDate()} ~ ${sun.getMonth()+1}/${sun.getDate()})`;
     } else if (type === 'month') {
         const first = new Date(today.getFullYear(), today.getMonth(), 1);
         const last  = new Date(today.getFullYear(), today.getMonth()+1, 0);
-        dateRangeFilter = { type:'month', startDate:first.toISOString().split('T')[0], endDate:last.toISOString().split('T')[0] };
+        const firstStr = `${first.getFullYear()}-${pad(first.getMonth()+1)}-${pad(first.getDate())}`;
+        const lastStr = `${last.getFullYear()}-${pad(last.getMonth()+1)}-${pad(last.getDate())}`;
+        dateRangeFilter = { type:'month', startDate:firstStr, endDate:lastStr };
         el('dateRange-month').classList.add('active');
         el('dateRangeDisplay').textContent = `이번 달 (${today.getMonth()+1}월 1일 ~ ${last.getDate()}일)`;
     } else if (type === 'custom') {
