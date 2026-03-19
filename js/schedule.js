@@ -2,7 +2,13 @@
 // ⑰ 일정 목록 렌더링
 // ========================
 function renderScheduleList() {
-    const listEl = el('adminScheduleList'); listEl.innerHTML='';
+    const listEl = el('adminScheduleList');
+    // 현재 열려있는 아코디언 상태 기억
+    const openAccordions = new Set();
+    listEl.querySelectorAll('[id^="acc-"]').forEach(acc => {
+        if (acc.style.display === 'block') openAccordions.add(acc.id);
+    });
+    listEl.innerHTML='';
     const filtered = getFilteredSchedules();
     filtered.sort((a,b)=>a.date.localeCompare(b.date)||a.time.localeCompare(b.time));
     const byDate={};
@@ -13,7 +19,8 @@ function renderScheduleList() {
         const d=new Date(dateStr+'T00:00:00'), mn=d.getMonth()+1, dy=d.getDate(), dn=['일','월','화','수','목','금','토'][d.getDay()];
         const daySchedules=byDate[dateStr];
         const accordionId=`acc-${dateStr}`;
-        const isExp = idx===0;
+        // 이전에 열려있었으면 유지, 아니면 첫 번째만 열기
+        const isExp = openAccordions.size > 0 ? openAccordions.has(accordionId) : idx===0;
         const wrap = document.createElement('div'); wrap.style.marginBottom='10px';
         const hdr = document.createElement('div');
         hdr.style.cssText='background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;padding:13px 16px;border-radius:8px;font-weight:700;display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none';
