@@ -84,6 +84,7 @@ async function addSchedule(event) {
     showToast(`${selectedDates.length}건 등록 완료!`);
     closeAddScheduleModal(); event.target.reset();
     if (selectedFreelancer) updateFreelancerSummary();
+    loadLocationOptions();
     renderTodaySchedules(); renderCalendar(); renderScheduleList();
 }
 
