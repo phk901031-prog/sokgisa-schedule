@@ -115,19 +115,28 @@ function renderTimeSettings() {
     selectedDates.forEach(dateStr=>{
         const dt=new Date(dateStr+'T00:00:00'), label=`${dt.getMonth()+1}월 ${dt.getDate()}일`;
         const row=document.createElement('div'); row.style.cssText='display:flex;align-items:center;gap:10px;margin-bottom:10px;padding:10px;background:#fff;border-radius:6px';
-        row.innerHTML=`<div style="flex:1;font-weight:500;color:#333">${label}</div><select onchange="updateDateTime('${dateStr}',this.value)" required style="flex:2;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px"><option value="">시간 선택</option>${genTimeOpts(dateStr)}</select>`;
+        const curTime = dateTimePairs[dateStr]||'';
+        const [curH, curM] = curTime ? curTime.split(':') : ['',''];
+        row.innerHTML=`<div style="flex:1;font-weight:500;color:#333">${label}</div><div style="display:flex;gap:4px;align-items:center;flex:2"><select onchange="updateDateTimeHM('${dateStr}')" id="timeH-${dateStr}" style="padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px"><option value="">시</option>${genHourOpts(curH)}</select><span style="font-weight:700">:</span><select onchange="updateDateTimeHM('${dateStr}')" id="timeM-${dateStr}" style="padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px"><option value="">분</option>${genMinuteOpts(curM)}</select></div>`;
         listEl.appendChild(row);
     });
 }
 
-function genTimeOpts(dateStr) {
-    let html=''; const cur=dateTimePairs[dateStr]||'';
-    for(let h=9;h<=20;h++) for(let m=0;m<60;m+=30){
-        if(h===20 && m>0) break;
-        const t=`${pad(h)}:${pad(m)}`; html+=`<option value="${t}"${t===cur?' selected':''}>${t}</option>`;
-    }
+function genHourOpts(curH) {
+    let html='';
+    for(let h=8;h<=22;h++) html+=`<option value="${pad(h)}"${pad(h)===curH?' selected':''}>${pad(h)}시</option>`;
+    return html;
+}
+function genMinuteOpts(curM) {
+    let html='';
+    for(let m=0;m<60;m+=10) html+=`<option value="${pad(m)}"${pad(m)===curM?' selected':''}>${pad(m)}분</option>`;
     return html;
 }
 
+function updateDateTimeHM(dateStr) {
+    const h = el('timeH-'+dateStr)?.value || '';
+    const m = el('timeM-'+dateStr)?.value || '';
+    dateTimePairs[dateStr] = (h && m) ? `${h}:${m}` : '';
+}
 function updateDateTime(dateStr, time) { dateTimePairs[dateStr]=time; }
 function changeBulkMonth(delta) { bulkDate.setMonth(bulkDate.getMonth()+delta); renderBulkDateSelector(); }

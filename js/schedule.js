@@ -94,7 +94,10 @@ async function saveScheduleEdit(event) {
     const freelancerId = el('editScheduleFreelancer').value;
     const sel = el('editScheduleFreelancer');
     const freelancerName = sel.options[sel.selectedIndex]?.text || '';
-    const updates = { title:el('editScheduleTitle').value.trim(), date:el('editScheduleDate').value, time:el('editScheduleTime').value, freelancer_id:freelancerId, freelancer_name:freelancerName, memo:el('editScheduleMemo').value.trim() };
+    const editH = el('editScheduleHour').value, editM = el('editScheduleMinute').value;
+    if (!editH || !editM) { alert('시간을 선택해주세요.'); return; }
+    const editTime = `${editH}:${editM}`;
+    const updates = { title:el('editScheduleTitle').value.trim(), date:el('editScheduleDate').value, time:editTime, freelancer_id:freelancerId, freelancer_name:freelancerName, memo:el('editScheduleMemo').value.trim() };
     showLoading(true);
     const { data, error } = await sb.from('schedules').update(updates).eq('id', id).select().single();
     showLoading(false);
@@ -140,13 +143,13 @@ function openEditScheduleModal(id) {
         if(p.id===s.freelancer_id) o.selected=true;
         fsel.appendChild(o);
     });
-    const tsel = el('editScheduleTime');
-    tsel.innerHTML = '<option value="">시간 선택</option>';
-    for (let h=6;h<=23;h++) for (let m=0;m<60;m+=30) {
-        const t=`${pad(h)}:${pad(m)}`, o=document.createElement('option');
-        o.value=t; o.textContent=t; if(t===s.time) o.selected=true;
-        tsel.appendChild(o);
-    }
+    const [curH, curM] = s.time ? s.time.split(':') : ['',''];
+    const hsel = el('editScheduleHour');
+    hsel.innerHTML = '<option value="">시</option>';
+    for (let h=8;h<=22;h++) { const o=document.createElement('option'); o.value=pad(h); o.textContent=`${pad(h)}시`; if(pad(h)===curH) o.selected=true; hsel.appendChild(o); }
+    const msel = el('editScheduleMinute');
+    msel.innerHTML = '<option value="">분</option>';
+    for (let m=0;m<60;m+=10) { const o=document.createElement('option'); o.value=pad(m); o.textContent=`${pad(m)}분`; if(pad(m)===curM) o.selected=true; msel.appendChild(o); }
     el('editScheduleModal').classList.add('show');
 }
 function closeEditScheduleModal() { el('editScheduleModal').classList.remove('show'); }

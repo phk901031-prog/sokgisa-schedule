@@ -312,9 +312,15 @@
             </div>
             <div class="form-group" style="margin-bottom:14px">
                 <label>시간</label>
-                <select id="editScheduleTime" required style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px">
-                    <option value="">시간 선택</option>
-                </select>
+                <div style="display:flex;gap:8px;align-items:center">
+                    <select id="editScheduleHour" required style="padding:10px;border:1px solid #ddd;border-radius:6px;font-size:14px">
+                        <option value="">시</option>
+                    </select>
+                    <span style="font-weight:700">:</span>
+                    <select id="editScheduleMinute" required style="padding:10px;border:1px solid #ddd;border-radius:6px;font-size:14px">
+                        <option value="">분</option>
+                    </select>
+                </div>
             </div>
             <div class="form-group" style="margin-bottom:20px">
                 <label>메모</label>
