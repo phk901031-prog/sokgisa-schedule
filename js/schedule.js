@@ -30,22 +30,30 @@ function renderScheduleList() {
         if(isExp) body.style.animation='slideDown .3s ease-out';
         const tbl = document.createElement('div');
         tbl.style.cssText='background:#fff;border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;margin-top:8px';
-        const thdr=document.createElement('div');
-        thdr.style.cssText='display:grid;grid-template-columns:70px 2fr 1fr 100px 140px;gap:8px;padding:11px 16px;background:#f5f5f5;font-weight:700;font-size:13px;color:#666;border-bottom:2px solid #e0e0e0';
-        thdr.innerHTML='<div>시간</div><div>회의명</div><div>속기사</div><div>상태</div><div style="text-align:center">작업</div>';
-        tbl.appendChild(thdr);
+        const isMobile = window.innerWidth <= 768;
+        if (!isMobile) {
+            const thdr=document.createElement('div');
+            thdr.style.cssText='display:grid;grid-template-columns:70px 2fr 1fr 100px 140px;gap:8px;padding:11px 16px;background:#f5f5f5;font-weight:700;font-size:13px;color:#666;border-bottom:2px solid #e0e0e0';
+            thdr.innerHTML='<div>시간</div><div>회의명</div><div>속기사</div><div>상태</div><div style="text-align:center">작업</div>';
+            tbl.appendChild(thdr);
+        }
         const stCfg={unconfirmed:{color:'#ff5252',icon:'🔴',text:'미확인'},confirmed:{color:'#ff9800',icon:'🟡',text:'일정확인'},arrived:{color:'#2196f3',icon:'🔵',text:'현장도착'},completed:{color:'#9c27b0',icon:'🟣',text:'회의종료'},transcription_done:{color:'#4caf50',icon:'🟢',text:'번문완료'},submitted:{color:'#00897b',icon:'✅',text:'제출완료'}};
         daySchedules.sort((a,b)=>a.time.localeCompare(b.time));
         daySchedules.forEach((s,i) => {
             const st=stCfg[s.status]||{color:'#999',icon:'⚪',text:s.status};
             const row=document.createElement('div');
-            row.style.cssText=`display:grid;grid-template-columns:70px 2fr 1fr 100px 140px;gap:8px;padding:13px 16px;align-items:center;border-bottom:${i===daySchedules.length-1?'none':'1px solid #f0f0f0'};cursor:pointer;transition:background .2s`;
-            row.onmouseover=function(){this.style.background='#f9f9f9'};
-            row.onmouseout=function(){this.style.background='#fff'};
             // 제출완료 버튼: 번문완료 상태일 때만 표시
             let actionBtns = `<button class="btn btn-outline" onclick="event.stopPropagation();openEditScheduleModal(${s.id})" style="font-size:11px;padding:5px 9px">수정</button><button class="btn" onclick="event.stopPropagation();deleteSchedule(${s.id})" style="font-size:11px;padding:5px 9px;background:#ffebee;color:#c62828;border:1px solid #ffcdd2">삭제</button>`;
             if (s.status==='transcription_done') actionBtns = `<button class="btn" onclick="event.stopPropagation();markSubmitted(${s.id})" style="font-size:11px;padding:5px 9px;background:#e0f2f1;color:#00695c;border:1px solid #80cbc4">제출완료</button>` + actionBtns;
-            row.innerHTML=`<div style="font-weight:600;color:#333">${s.time}</div><div><div style="font-weight:500;color:#333;margin-bottom:3px">${s.title}</div>${s.memo?`<div style="font-size:12px;color:#999">📝 ${s.memo}</div>`:''}</div><div style="color:#666">${s.freelancer_name}</div><div><span style="background:${st.color}15;color:${st.color};padding:3px 8px;border-radius:12px;font-size:11px;font-weight:600;white-space:nowrap">${st.icon} ${st.text}</span></div><div style="display:flex;gap:5px;justify-content:center">${actionBtns}</div>`;
+            if (isMobile) {
+                row.style.cssText=`padding:12px 14px;border-bottom:${i===daySchedules.length-1?'none':'1px solid #f0f0f0'}`;
+                row.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-weight:700;color:#333;font-size:15px">${s.time}</span><span style="background:${st.color}15;color:${st.color};padding:3px 8px;border-radius:12px;font-size:11px;font-weight:600;white-space:nowrap">${st.icon} ${st.text}</span></div><div style="font-weight:500;color:#333;margin-bottom:3px">${s.title}</div><div style="color:#666;font-size:13px;margin-bottom:6px">👤 ${s.freelancer_name}</div>${s.memo?`<div style="font-size:12px;color:#999;margin-bottom:6px">📝 ${s.memo}</div>`:''}<div style="display:flex;gap:6px">${actionBtns}</div>`;
+            } else {
+                row.style.cssText=`display:grid;grid-template-columns:70px 2fr 1fr 100px 140px;gap:8px;padding:13px 16px;align-items:center;border-bottom:${i===daySchedules.length-1?'none':'1px solid #f0f0f0'};cursor:pointer;transition:background .2s`;
+                row.onmouseover=function(){this.style.background='#f9f9f9'};
+                row.onmouseout=function(){this.style.background='#fff'};
+                row.innerHTML=`<div style="font-weight:600;color:#333">${s.time}</div><div><div style="font-weight:500;color:#333;margin-bottom:3px">${s.title}</div>${s.memo?`<div style="font-size:12px;color:#999">📝 ${s.memo}</div>`:''}</div><div style="color:#666">${s.freelancer_name}</div><div><span style="background:${st.color}15;color:${st.color};padding:3px 8px;border-radius:12px;font-size:11px;font-weight:600;white-space:nowrap">${st.icon} ${st.text}</span></div><div style="display:flex;gap:5px;justify-content:center">${actionBtns}</div>`;
+            }
             tbl.appendChild(row);
         });
         body.appendChild(tbl);
