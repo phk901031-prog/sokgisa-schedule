@@ -3,7 +3,7 @@
 // ========================
 function loadFreelancerSchedules() {
     const listEl = el('freelancerScheduleList'); listEl.innerHTML='';
-    const todayStr = new Date().toISOString().split('T')[0];
+    const t = new Date(); const todayStr = `${t.getFullYear()}-${pad(t.getMonth()+1)}-${pad(t.getDate())}`;
     const mySchedules = schedules.filter(s=>s.freelancer_id===currentUser.id);
     mySchedules.sort((a,b)=>a.date.localeCompare(b.date)||a.time.localeCompare(b.time));
     mySchedules.forEach(s => {

@@ -2,7 +2,7 @@
 // ⑭ 오늘 일정
 // ========================
 function renderTodaySchedules() {
-    const today = new Date(), todayStr = today.toISOString().split('T')[0];
+    const today = new Date(), todayStr = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}`;
     const mn = today.getMonth()+1, dy = today.getDate(), dn = ['일','월','화','수','목','금','토'][today.getDay()];
     el('todayDate').textContent = `(${mn}월 ${dy}일 ${dn}요일)`;
     let arr = schedules.filter(s => s.date===todayStr);
@@ -39,7 +39,7 @@ function renderCalendar() {
     });
     const firstDay = new Date(year, month, 1).getDay();
     const lastDate = new Date(year, month+1, 0).getDate();
-    const todayStr = new Date().toISOString().split('T')[0];
+    const t = new Date(); const todayStr = `${t.getFullYear()}-${pad(t.getMonth()+1)}-${pad(t.getDate())}`;
     for (let i=0; i<firstDay; i++) gridEl.appendChild(document.createElement('div'));
     for (let date=1; date<=lastDate; date++) {
         const dateStr = `${year}-${pad(month+1)}-${pad(date)}`;
