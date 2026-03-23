@@ -137,7 +137,7 @@ function renderBulkDateSelector() {
 function toggleDateSelection(dateStr) {
     const idx=selectedDates.indexOf(dateStr);
     if(idx>-1){ selectedDates.splice(idx,1); delete dateTimePairs[dateStr]; }
-    else { selectedDates.push(dateStr); selectedDates.sort(); dateTimePairs[dateStr]=''; }
+    else { selectedDates.push(dateStr); selectedDates.sort(); dateTimePairs[dateStr]=[{time:'',memo:''}]; }
     renderBulkDateSelector(); updateSelectedDatesDisplay(); renderTimeSettings();
 }
 
@@ -154,12 +154,42 @@ function renderTimeSettings() {
     container.style.display='block'; listEl.innerHTML='';
     selectedDates.forEach(dateStr=>{
         const dt=new Date(dateStr+'T00:00:00'), label=`${dt.getMonth()+1}월 ${dt.getDate()}일`;
-        const row=document.createElement('div'); row.style.cssText='display:flex;align-items:center;gap:10px;margin-bottom:10px;padding:10px;background:#fff;border-radius:6px';
-        const curTime = dateTimePairs[dateStr]||'';
-        const [curH, curM] = curTime ? curTime.split(':') : ['',''];
-        row.innerHTML=`<div style="flex:1;font-weight:500;color:#333">${label}</div><div style="display:flex;gap:4px;align-items:center;flex:2"><select onchange="updateDateTimeHM('${dateStr}')" id="timeH-${dateStr}" style="padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px"><option value="">시</option>${genHourOpts(curH)}</select><span style="font-weight:700">:</span><select onchange="updateDateTimeHM('${dateStr}')" id="timeM-${dateStr}" style="padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px"><option value="">분</option>${genMinuteOpts(curM)}</select></div>`;
-        listEl.appendChild(row);
+        const slots = dateTimePairs[dateStr] || [{time:'',memo:''}];
+        // 날짜 헤더
+        const dateHeader=document.createElement('div');
+        dateHeader.style.cssText='display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;margin-top:12px';
+        dateHeader.innerHTML=`<div style="font-weight:700;color:#333;font-size:15px">📅 ${label}</div><button type="button" onclick="addTimeSlot('${dateStr}')" style="background:#e3f2fd;color:#1565c0;border:1px solid #90caf9;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;font-weight:600">+ 시간 추가</button>`;
+        listEl.appendChild(dateHeader);
+        // 각 시간 슬롯
+        slots.forEach((slot, i) => {
+            const row=document.createElement('div'); row.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:6px;padding:10px;background:#fff;border-radius:6px;border:1px solid #e0e0e0';
+            const [curH, curM] = slot.time ? slot.time.split(':') : ['',''];
+            let removeBtn = slots.length > 1 ? `<button type="button" onclick="removeTimeSlot('${dateStr}',${i})" style="background:#ffebee;color:#c62828;border:1px solid #ffcdd2;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer">✕</button>` : '';
+            row.innerHTML=`<div style="display:flex;gap:4px;align-items:center"><select onchange="updateSlotTime('${dateStr}',${i})" id="timeH-${dateStr}-${i}" style="padding:7px;border:1px solid #ddd;border-radius:6px;font-size:13px"><option value="">시</option>${genHourOpts(curH)}</select><span style="font-weight:700">:</span><select onchange="updateSlotTime('${dateStr}',${i})" id="timeM-${dateStr}-${i}" style="padding:7px;border:1px solid #ddd;border-radius:6px;font-size:13px"><option value="">분</option>${genMinuteOpts(curM)}</select></div><input type="text" placeholder="메모" value="${slot.memo||''}" onchange="updateSlotMemo('${dateStr}',${i},this.value)" style="flex:1;padding:7px;border:1px solid #ddd;border-radius:6px;font-size:13px">${removeBtn}`;
+            listEl.appendChild(row);
+        });
     });
+}
+
+function addTimeSlot(dateStr) {
+    if (!dateTimePairs[dateStr]) dateTimePairs[dateStr] = [{time:'',memo:''}];
+    dateTimePairs[dateStr].push({time:'',memo:''});
+    renderTimeSettings();
+}
+
+function removeTimeSlot(dateStr, idx) {
+    dateTimePairs[dateStr].splice(idx, 1);
+    renderTimeSettings();
+}
+
+function updateSlotTime(dateStr, idx) {
+    const h = el('timeH-'+dateStr+'-'+idx)?.value || '';
+    const m = el('timeM-'+dateStr+'-'+idx)?.value || '';
+    dateTimePairs[dateStr][idx].time = (h && m) ? `${h}:${m}` : '';
+}
+
+function updateSlotMemo(dateStr, idx, memo) {
+    dateTimePairs[dateStr][idx].memo = memo;
 }
 
 function genHourOpts(curH) {
@@ -173,10 +203,5 @@ function genMinuteOpts(curM) {
     return html;
 }
 
-function updateDateTimeHM(dateStr) {
-    const h = el('timeH-'+dateStr)?.value || '';
-    const m = el('timeM-'+dateStr)?.value || '';
-    dateTimePairs[dateStr] = (h && m) ? `${h}:${m}` : '';
-}
-function updateDateTime(dateStr, time) { dateTimePairs[dateStr]=time; }
+function updateDateTime(dateStr, time) { dateTimePairs[dateStr]=[{time,memo:''}]; }
 function changeBulkMonth(delta) { bulkDate.setMonth(bulkDate.getMonth()+delta); renderBulkDateSelector(); }

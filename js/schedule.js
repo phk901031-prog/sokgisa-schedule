@@ -75,21 +75,35 @@ async function addSchedule(event) {
     const memo  = el('scheduleMemo').value.trim();
     if (!title) { alert('교육지원청을 선택해주세요.'); return; }
     if (!selectedDates.length) { alert('날짜를 선택해주세요.'); return; }
-    for (const d of selectedDates) { if (!dateTimePairs[d]) { alert(`${d} 날짜의 시간을 설정해주세요.`); return; } }
-    const dups = selectedDates.filter(d => schedules.some(s => s.date===d && s.freelancer_id===freelancerId && s.time===dateTimePairs[d]));
-    if (dups.length && !confirm(`다음 날짜에 동일 일정이 이미 있습니다:\n${dups.join(', ')}\n\n계속 등록하시겠습니까?`)) return;
+    // 각 날짜의 모든 시간 슬롯 검증
+    for (const d of selectedDates) {
+        const slots = dateTimePairs[d];
+        if (!slots || !slots.length) { alert(`${d} 날짜의 시간을 설정해주세요.`); return; }
+        for (let i=0; i<slots.length; i++) {
+            if (!slots[i].time) { alert(`${d} 날짜의 ${i+1}번째 시간을 설정해주세요.`); return; }
+        }
+    }
+    // 중복 체크
+    const allRows = [];
+    selectedDates.forEach(d => {
+        dateTimePairs[d].forEach(slot => {
+            allRows.push({ date:d, time:slot.time, memo:slot.memo||'' });
+        });
+    });
+    const dups = allRows.filter(r => schedules.some(s => s.date===r.date && s.freelancer_id===freelancerId && s.time===r.time));
+    if (dups.length && !confirm(`동일 시간 일정이 ${dups.length}건 있습니다.\n계속 등록하시겠습니까?`)) return;
 
     showLoading(true);
-    const rows = selectedDates.map(d => ({ title, date:d, time:dateTimePairs[d], freelancer_id:freelancerId, freelancer_name:freelancerName, status:'unconfirmed', memo, created_by:currentUser.id }));
+    const rows = allRows.map(r => ({ title, date:r.date, time:r.time, freelancer_id:freelancerId, freelancer_name:freelancerName, status:'unconfirmed', memo:r.memo||memo, created_by:currentUser.id }));
     const { data, error } = await sb.from('schedules').insert(rows).select();
     showLoading(false);
     if (error) { alert('일정 등록 오류: '+error.message); return; }
     if (data) {
         schedules.push(...data);
-        const datesSummary = selectedDates.map(d => `${d} ${dateTimePairs[d]}`).join('\n');
-        await sendPushNotification(freelancerId, `📅 새 일정 ${selectedDates.length}건 등록\n${title}\n${datesSummary}`, '속기사 일정 관리');
+        const datesSummary = allRows.map(r => `${r.date} ${r.time}`).join('\n');
+        await sendPushNotification(freelancerId, `📅 새 일정 ${allRows.length}건 등록\n${title}\n${datesSummary}`, '속기사 일정 관리');
     }
-    showToast(`${selectedDates.length}건 등록 완료!`);
+    showToast(`${allRows.length}건 등록 완료!`);
     closeAddScheduleModal(); event.target.reset();
     if (selectedFreelancer) updateFreelancerSummary();
     loadLocationOptions();
