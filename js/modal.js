@@ -121,8 +121,8 @@ function renderBulkDateSelector() {
     const year=bulkDate.getFullYear(), month=bulkDate.getMonth();
     el('bulkMonthDisplay').textContent=`${year}년 ${month+1}월`;
     const gridEl=el('bulkDateSelector'); gridEl.innerHTML='';
-    ['일','월','화','수','목','금','토'].forEach(d=>{ const h=document.createElement('div'); h.style.cssText='text-align:center;font-weight:700;color:#666;font-size:12px;padding:5px'; h.textContent=d; gridEl.appendChild(h); });
-    const firstDay=new Date(year,month,1).getDay(), lastDate=new Date(year,month+1,0).getDate();
+    ['월','화','수','목','금','토','일'].forEach(d=>{ const h=document.createElement('div'); h.style.cssText='text-align:center;font-weight:700;color:#666;font-size:12px;padding:5px'; h.textContent=d; gridEl.appendChild(h); });
+    const firstDaySun=new Date(year,month,1).getDay(), firstDay=firstDaySun===0?6:firstDaySun-1, lastDate=new Date(year,month+1,0).getDate();
     for(let i=0;i<firstDay;i++) gridEl.appendChild(document.createElement('div'));
     for(let d=1;d<=lastDate;d++){
         const dateStr=`${year}-${pad(month+1)}-${pad(d)}`, isSel=selectedDates.includes(dateStr);

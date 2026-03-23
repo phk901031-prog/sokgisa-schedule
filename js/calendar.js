@@ -34,10 +34,11 @@ function renderCalendar() {
     if (!monthEl || !gridEl) return;
     monthEl.textContent = `${year}년 ${month+1}월`;
     gridEl.innerHTML = '';
-    ['일','월','화','수','목','금','토'].forEach(d => {
+    ['월','화','수','목','금','토','일'].forEach(d => {
         const h = document.createElement('div'); h.className='calendar-day-header'; h.textContent=d; gridEl.appendChild(h);
     });
-    const firstDay = new Date(year, month, 1).getDay();
+    const firstDaySun = new Date(year, month, 1).getDay();
+    const firstDay = firstDaySun === 0 ? 6 : firstDaySun - 1; // 월요일 시작으로 변환
     const lastDate = new Date(year, month+1, 0).getDate();
     const t = new Date(); const todayStr = `${t.getFullYear()}-${pad(t.getMonth()+1)}-${pad(t.getDate())}`;
     for (let i=0; i<firstDay; i++) gridEl.appendChild(document.createElement('div'));
