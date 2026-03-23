@@ -8,14 +8,46 @@ function loadFreelancerOptions() {
 }
 
 // ========================
-// 교육지원청 관리
+// 교육지원청 관리 (Supabase DB 기반)
 // ========================
 let locationList = [];
 
-function loadLocations() {
-    const saved = localStorage.getItem('locationList');
-    locationList = saved ? JSON.parse(saved) : ['천안교육지원청','아산교육지원청','공주교육지원청','논산계룡교육지원청','서산교육지원청','홍성교육지원청','당진교육지원청','보령교육지원청','서천교육지원청','태안교육지원청','예산교육지원청','청양교육지원청','금산교육지원청','부여교육지원청','세종특별자치시교육청'];
+async function loadLocations() {
+    // DB에서 교육지원청 목록 로드
+    const { data, error } = await sb.from('locations').select('name').order('name');
+    if (data && !error) {
+        locationList = data.map(d => d.name);
+    } else {
+        // DB 실패 시 localStorage fallback
+        const saved = localStorage.getItem('locationList');
+        locationList = saved ? JSON.parse(saved) : ['천안교육지원청','아산교육지원청','공주교육지원청','논산계룡교육지원청','서산교육지원청','홍성교육지원청','당진교육지원청','보령교육지원청','서천교육지원청','태안교육지원청','예산교육지원청','청양교육지원청','금산교육지원청','부여교육지원청','세종특별자치시교육청'];
+    }
     renderLocationSelect();
+}
+
+// 동기화: localStorage 목록을 DB에 병합 (추가만, 삭제 안 함)
+async function syncLocations() {
+    if (!confirm('교육지원청 목록을 동기화하시겠습니까?\n\n이 기기에 저장된 목록과 서버 목록을 합칩니다.\n(기존 항목은 삭제되지 않습니다)')) return;
+    showLoading(true);
+    // 1. localStorage 목록 가져오기
+    const saved = localStorage.getItem('locationList');
+    const localList = saved ? JSON.parse(saved) : [];
+    // 2. DB 목록 가져오기
+    const { data: dbData } = await sb.from('locations').select('name');
+    const dbList = (dbData || []).map(d => d.name);
+    // 3. localStorage에만 있는 것 → DB에 추가
+    const toAdd = localList.filter(loc => !dbList.includes(loc));
+    if (toAdd.length > 0) {
+        const rows = toAdd.map(name => ({ name }));
+        await sb.from('locations').insert(rows);
+    }
+    // 4. DB에서 최신 목록 다시 로드
+    await loadLocations();
+    // 5. localStorage도 DB 기준으로 업데이트
+    localStorage.setItem('locationList', JSON.stringify(locationList));
+    showLoading(false);
+    const msg = toAdd.length > 0 ? `동기화 완료! ${toAdd.length}개 항목 추가됨` : '동기화 완료! 새로 추가할 항목이 없습니다';
+    showToast(msg);
 }
 
 function renderLocationSelect() {
@@ -36,22 +68,30 @@ function showAddLocationInput() {
     row.style.display = row.style.display === 'none' ? 'block' : 'none';
 }
 
-function deleteLocation() {
+async function deleteLocation() {
     const val = el('scheduleTitleSelect').value;
     if (!val) { alert('삭제할 교육지원청을 먼저 선택해주세요.'); return; }
     if (!confirm(`'${val}'을(를) 목록에서 삭제하시겠습니까?`)) return;
+    showLoading(true);
+    await sb.from('locations').delete().eq('name', val);
     locationList = locationList.filter(loc => loc !== val);
     localStorage.setItem('locationList', JSON.stringify(locationList));
+    showLoading(false);
     renderLocationSelect();
     el('scheduleTitle').value = '';
     showToast(`'${val}' 삭제되었습니다.`);
 }
 
-function saveNewLocation() {
+async function saveNewLocation() {
     const val = el('newLocationInput').value.trim();
     if (!val) { alert('교육지원청명을 입력하세요.'); return; }
     if (locationList.includes(val)) { alert('이미 등록된 항목입니다.'); return; }
+    showLoading(true);
+    const { error } = await sb.from('locations').insert({ name: val });
+    showLoading(false);
+    if (error) { alert('추가 오류: ' + error.message); return; }
     locationList.push(val);
+    locationList.sort();
     localStorage.setItem('locationList', JSON.stringify(locationList));
     renderLocationSelect();
     el('scheduleTitleSelect').value = val;
