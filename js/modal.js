@@ -13,15 +13,32 @@ function loadFreelancerOptions() {
 let locationList = [];
 
 async function loadLocations() {
-    // DB에서 교육지원청 목록 로드
+    // 1. 먼저 localStorage에 남아있는 목록을 DB에 자동 병합 (1회성)
+    const saved = localStorage.getItem('locationList');
+    if (saved) {
+        try {
+            const localList = JSON.parse(saved);
+            if (Array.isArray(localList) && localList.length > 0) {
+                const { data: dbData } = await sb.from('locations').select('name');
+                const dbList = (dbData || []).map(d => d.name);
+                const toAdd = localList.filter(loc => loc && !dbList.includes(loc));
+                if (toAdd.length > 0) {
+                    await sb.from('locations').insert(toAdd.map(name => ({ name })));
+                }
+                // 병합 완료 후 localStorage 플래그 설정 (다음부터 스킵)
+                localStorage.setItem('locationsSynced', 'true');
+            }
+        } catch(e) { console.log('localStorage 병합 오류:', e); }
+    }
+    // 2. DB에서 최신 목록 로드
     const { data, error } = await sb.from('locations').select('name').order('name');
     if (data && !error) {
         locationList = data.map(d => d.name);
     } else {
-        // DB 실패 시 localStorage fallback
-        const saved = localStorage.getItem('locationList');
         locationList = saved ? JSON.parse(saved) : ['천안교육지원청','아산교육지원청','공주교육지원청','논산계룡교육지원청','서산교육지원청','홍성교육지원청','당진교육지원청','보령교육지원청','서천교육지원청','태안교육지원청','예산교육지원청','청양교육지원청','금산교육지원청','부여교육지원청','세종특별자치시교육청'];
     }
+    // 3. localStorage도 DB 기준으로 갱신
+    localStorage.setItem('locationList', JSON.stringify(locationList));
     renderLocationSelect();
 }
 
