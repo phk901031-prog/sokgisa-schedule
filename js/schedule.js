@@ -9,7 +9,9 @@ function renderScheduleList() {
         if (acc.style.display === 'block') openAccordions.add(acc.id);
     });
     listEl.innerHTML='';
-    const filtered = getFilteredSchedules();
+    let filtered = getFilteredSchedules();
+    // 하단 드롭다운: 제출완료된 일정은 숨김 (캘린더에는 그대로 표시)
+    filtered = filtered.filter(s => s.status !== 'submitted');
     filtered.sort((a,b)=>a.date.localeCompare(b.date)||a.time.localeCompare(b.time));
     const byDate={};
     filtered.forEach(s=>{ if(!byDate[s.date]) byDate[s.date]=[]; byDate[s.date].push(s); });

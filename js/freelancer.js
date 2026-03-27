@@ -4,7 +4,15 @@
 function loadFreelancerSchedules() {
     const listEl = el('freelancerScheduleList'); listEl.innerHTML='';
     const t = new Date(); const todayStr = `${t.getFullYear()}-${pad(t.getMonth()+1)}-${pad(t.getDate())}`;
-    const mySchedules = schedules.filter(s=>s.freelancer_id===currentUser.id);
+    // 오늘 ~ +7일 범위, 번문완료/제출완료 숨김 (캘린더에는 그대로 표시)
+    const endDate = new Date(t);
+    endDate.setDate(endDate.getDate() + 7);
+    const endStr = `${endDate.getFullYear()}-${pad(endDate.getMonth()+1)}-${pad(endDate.getDate())}`;
+    const mySchedules = schedules.filter(s =>
+        s.freelancer_id === currentUser.id &&
+        s.date >= todayStr && s.date <= endStr &&
+        s.status !== 'transcription_done' && s.status !== 'submitted'
+    );
     mySchedules.sort((a,b)=>a.date.localeCompare(b.date)||a.time.localeCompare(b.time));
     mySchedules.forEach(s => {
         const isToday = s.date===todayStr;
