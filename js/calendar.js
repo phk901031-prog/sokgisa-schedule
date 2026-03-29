@@ -34,8 +34,11 @@ function renderCalendar() {
     if (!monthEl || !gridEl) return;
     monthEl.textContent = `${year}년 ${month+1}월`;
     gridEl.innerHTML = '';
-    ['월','화','수','목','금','토','일'].forEach(d => {
-        const h = document.createElement('div'); h.className='calendar-day-header'; h.textContent=d; gridEl.appendChild(h);
+    ['월','화','수','목','금','토','일'].forEach((d,i) => {
+        const h = document.createElement('div'); h.className='calendar-day-header'; h.textContent=d;
+        if (i===5) h.style.color='#2196F3'; // 토요일 파란색
+        if (i===6) h.style.color='#f44336'; // 일요일 빨간색
+        gridEl.appendChild(h);
     });
     const firstDaySun = new Date(year, month, 1).getDay();
     const firstDay = firstDaySun === 0 ? 6 : firstDaySun - 1; // 월요일 시작으로 변환
@@ -50,8 +53,10 @@ function renderCalendar() {
         if (!isAdmin && currentUser.role==='freelancer') daySchedules = daySchedules.filter(s => s.freelancer_id===currentUser.id);
         daySchedules = applySearchFilter(daySchedules);
         const dayEl = document.createElement('div');
+        const dayOfWeek = new Date(year, month, date).getDay(); // 0=일, 6=토
         dayEl.className = 'calendar-day' + (daySchedules.length ? ' has-event' : '') + (dateStr===todayStr ? ' today' : '');
-        dayEl.innerHTML = `<div class="day-number${dateStr===todayStr?' today-num':''}">${date}</div>`;
+        const dayNumColor = dateStr===todayStr ? '' : dayOfWeek===6 ? 'color:#2196F3;' : dayOfWeek===0 ? 'color:#f44336;' : '';
+        dayEl.innerHTML = `<div class="day-number${dateStr===todayStr?' today-num':''}" style="${dayNumColor}">${date}</div>`;
         if (daySchedules.length) {
             const prev = document.createElement('div'); prev.className='event-preview';
             prev.innerHTML = daySchedules.slice(0,3).map(s=>`<span class="event-dot"></span>${s.freelancer_name.slice(0,2)}-${s.title.replace('교육지원청','')}`).join('<br>');

@@ -138,13 +138,15 @@ function renderBulkDateSelector() {
     const year=bulkDate.getFullYear(), month=bulkDate.getMonth();
     el('bulkMonthDisplay').textContent=`${year}년 ${month+1}월`;
     const gridEl=el('bulkDateSelector'); gridEl.innerHTML='';
-    ['월','화','수','목','금','토','일'].forEach(d=>{ const h=document.createElement('div'); h.style.cssText='text-align:center;font-weight:700;color:#666;font-size:12px;padding:5px'; h.textContent=d; gridEl.appendChild(h); });
+    ['월','화','수','목','금','토','일'].forEach((d,i)=>{ const h=document.createElement('div'); h.style.cssText=`text-align:center;font-weight:700;font-size:12px;padding:5px;color:${i===5?'#2196F3':i===6?'#f44336':'#666'}`; h.textContent=d; gridEl.appendChild(h); });
     const firstDaySun=new Date(year,month,1).getDay(), firstDay=firstDaySun===0?6:firstDaySun-1, lastDate=new Date(year,month+1,0).getDate();
     for(let i=0;i<firstDay;i++) gridEl.appendChild(document.createElement('div'));
     for(let d=1;d<=lastDate;d++){
         const dateStr=`${year}-${pad(month+1)}-${pad(d)}`, isSel=selectedDates.includes(dateStr);
         const btn=document.createElement('div');
-        btn.style.cssText=`padding:8px;text-align:center;border:2px solid ${isSel?'#4CAF50':'#ddd'};background:${isSel?'#e8f5e9':'#fff'};border-radius:6px;cursor:pointer;font-size:14px;transition:all .2s;-webkit-tap-highlight-color:transparent`;
+        const dow=new Date(year,month,d).getDay();
+        const dayColor=dow===6?'#2196F3':dow===0?'#f44336':'#333';
+        btn.style.cssText=`padding:8px;text-align:center;border:2px solid ${isSel?'#4CAF50':'#ddd'};background:${isSel?'#e8f5e9':'#fff'};border-radius:6px;cursor:pointer;font-size:14px;transition:all .2s;-webkit-tap-highlight-color:transparent;color:${dayColor}`;
         btn.textContent=d;
         btn.onclick=()=>toggleDateSelection(dateStr);
         gridEl.appendChild(btn);
