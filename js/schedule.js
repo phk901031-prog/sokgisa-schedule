@@ -44,9 +44,12 @@ function renderScheduleList() {
         daySchedules.forEach((s,i) => {
             const st=stCfg[s.status]||{color:'#999',icon:'⚪',text:s.status};
             const row=document.createElement('div');
-            // 제출완료 버튼: 번문완료 상태일 때만 표시
-            let actionBtns = `<button class="btn btn-outline" onclick="event.stopPropagation();openEditScheduleModal(${s.id})" style="font-size:11px;padding:5px 9px">수정</button><button class="btn" onclick="event.stopPropagation();deleteSchedule(${s.id})" style="font-size:11px;padding:5px 9px;background:#ffebee;color:#c62828;border:1px solid #ffcdd2">삭제</button>`;
-            if (s.status==='transcription_done') actionBtns = `<button class="btn" onclick="event.stopPropagation();markSubmitted(${s.id})" style="font-size:11px;padding:5px 9px;background:#e0f2f1;color:#00695c;border:1px solid #80cbc4">제출완료</button>` + actionBtns;
+            // 강제 상태 변경 버튼 + 수정 + 삭제
+            const nextSt = {unconfirmed:{next:'confirmed',text:'일정확인',bg:'#fff3e0',color:'#e65100',border:'#ffcc80'},confirmed:{next:'arrived',text:'현장도착',bg:'#e3f2fd',color:'#1565c0',border:'#90caf9'},arrived:{next:'completed',text:'회의종료',bg:'#f3e5f5',color:'#7b1fa2',border:'#ce93d8'},completed:{next:'transcription_done',text:'번문완료',bg:'#e8f5e9',color:'#2e7d32',border:'#a5d6a7'},transcription_done:{next:'submitted',text:'제출완료',bg:'#e0f2f1',color:'#00695c',border:'#80cbc4'}};
+            const ns = nextSt[s.status];
+            let actionBtns = '';
+            if (ns) actionBtns += `<button class="btn" onclick="event.stopPropagation();adminForceStatus(${s.id},'${ns.next}')" style="font-size:11px;padding:5px 9px;background:${ns.bg};color:${ns.color};border:1px solid ${ns.border}">▶ ${ns.text}</button>`;
+            actionBtns += `<button class="btn btn-outline" onclick="event.stopPropagation();openEditScheduleModal(${s.id})" style="font-size:11px;padding:5px 9px">수정</button><button class="btn" onclick="event.stopPropagation();deleteSchedule(${s.id})" style="font-size:11px;padding:5px 9px;background:#ffebee;color:#c62828;border:1px solid #ffcdd2">삭제</button>`;
             if (isMobile) {
                 row.style.cssText=`padding:12px 14px;border-bottom:${i===daySchedules.length-1?'none':'1px solid #f0f0f0'}`;
                 row.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-weight:700;color:#333;font-size:15px">${s.time}</span><span style="background:${st.color}15;color:${st.color};padding:3px 8px;border-radius:12px;font-size:11px;font-weight:600;white-space:nowrap">${st.icon} ${st.text}</span></div><div style="font-weight:500;color:#333;margin-bottom:3px">${s.title}</div><div style="color:#666;font-size:13px;margin-bottom:6px">👤 ${s.freelancer_name}</div>${s.memo?`<div style="font-size:12px;color:#999;margin-bottom:6px">📝 ${s.memo}</div>`:''}<div style="display:flex;gap:6px">${actionBtns}</div>`;
