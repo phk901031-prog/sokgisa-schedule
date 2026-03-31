@@ -84,10 +84,19 @@ function showDateDetail(dateStr, daySchedules) {
     const d = new Date(dateStr+'T00:00:00'), mn=d.getMonth()+1, dy=d.getDate(), dn=['일','월','화','수','목','금','토'][d.getDay()];
     el('dateDetailTitle').textContent = `${mn}월 ${dy}일 (${dn}) - 총 ${daySchedules.length}건`;
     const contentEl = el('dateDetailContent'); contentEl.innerHTML='';
-    if (!daySchedules.length) { contentEl.innerHTML='<div style="padding:40px;text-align:center;color:#999">이 날짜에 등록된 일정이 없습니다.</div>'; }
+    // 관리자: 캘린더에서 바로 일정 등록 버튼
+    if (currentView==='admin') {
+        const addBtn = document.createElement('div');
+        addBtn.style.cssText='margin-bottom:12px';
+        addBtn.innerHTML=`<button class="btn btn-primary" onclick="closeDateDetailModal();openAddScheduleModalWithDate('${dateStr}')" style="width:100%;padding:10px;font-size:14px">+ 이 날짜에 일정 등록</button>`;
+        contentEl.appendChild(addBtn);
+    }
+    if (!daySchedules.length) { contentEl.innerHTML+='<div style="padding:40px;text-align:center;color:#999">이 날짜에 등록된 일정이 없습니다.</div>'; }
     else {
         daySchedules.sort((a,b)=>a.time.localeCompare(b.time));
         const stCfg = { unconfirmed:{color:'#ff5252',icon:'🔴',text:'미확인'}, confirmed:{color:'#ff9800',icon:'🟡',text:'일정확인'}, arrived:{color:'#2196f3',icon:'🔵',text:'현장도착'}, completed:{color:'#9c27b0',icon:'🟣',text:'회의종료'}, transcription_done:{color:'#4caf50',icon:'🟢',text:'번문완료'}, submitted:{color:'#00897b',icon:'✅',text:'제출완료'} };
+        // 관리자 강제 상태 변경: 다음 단계 매핑
+        const nextStatus = { unconfirmed:{next:'confirmed',text:'일정확인',bg:'#fff3e0',color:'#e65100',border:'#ffcc80'}, confirmed:{next:'arrived',text:'현장도착',bg:'#e3f2fd',color:'#1565c0',border:'#90caf9'}, arrived:{next:'completed',text:'회의종료',bg:'#f3e5f5',color:'#7b1fa2',border:'#ce93d8'}, completed:{next:'transcription_done',text:'번문완료',bg:'#e8f5e9',color:'#2e7d32',border:'#a5d6a7'}, transcription_done:{next:'submitted',text:'제출완료',bg:'#e0f2f1',color:'#00695c',border:'#80cbc4'} };
         daySchedules.forEach(s => {
             const st = stCfg[s.status]||{color:'#999',icon:'⚪',text:s.status};
             const card = document.createElement('div');
@@ -97,10 +106,54 @@ function showDateDetail(dateStr, daySchedules) {
                 const wm=s.time_log.totalWorkMinutes||0;
                 timeLogHTML=`<div style="background:#e8f5e9;border-radius:6px;padding:10px;margin-top:10px"><div style="font-weight:700;color:#2e7d32;margin-bottom:4px">⏱️ 실제 근무시간</div><div style="font-size:12px;color:#555">${s.time_log.startTime} ~ ${s.time_log.endTime}<br><strong style="color:#1976d2">총 ${Math.floor(wm/60)}시간 ${wm%60}분</strong></div></div>`;
             }
-            card.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px"><div style="flex:1"><div style="font-weight:700;color:#333;font-size:16px;margin-bottom:4px">${s.title}</div><div style="color:#666;font-size:14px;display:flex;gap:12px"><span>⏰ ${s.time}</span><span>👤 ${s.freelancer_name}</span></div></div><span style="background:${st.color}20;color:${st.color};padding:4px 10px;border-radius:12px;font-size:11px;font-weight:700;white-space:nowrap">${st.icon} ${st.text}</span></div>${s.memo?`<div style="color:#666;font-size:13px;padding-top:8px;border-top:1px solid #e0e0e0">📝 ${s.memo}</div>`:''}${timeLogHTML}${currentView==='admin'?`<div style="display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid #e0e0e0">${s.status==='transcription_done'?`<button class="btn" onclick="markSubmitted(${s.id})" style="flex:1;font-size:12px;padding:6px;background:#e0f2f1;color:#00695c;border:1px solid #80cbc4">✅ 제출완료</button>`:''}<button class="btn btn-outline" onclick="closeDateDetailModal();openEditScheduleModal(${s.id})" style="flex:1;font-size:12px;padding:6px">✏️ 수정</button><button class="btn" onclick="deleteSchedule(${s.id})" style="flex:1;font-size:12px;padding:6px;background:#ffebee;color:#c62828;border:1px solid #ffcdd2">🗑️ 삭제</button></div>`:''}`;
+            // 관리자 버튼: 강제 상태 변경 + 수정 + 삭제
+            let adminBtns = '';
+            if (currentView==='admin') {
+                const ns = nextStatus[s.status];
+                const statusBtn = ns ? `<button class="btn" onclick="adminForceStatus(${s.id},'${ns.next}')" style="flex:1;font-size:12px;padding:6px;background:${ns.bg};color:${ns.color};border:1px solid ${ns.border}">▶ ${ns.text}</button>` : '';
+                adminBtns = `<div style="display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid #e0e0e0">${statusBtn}<button class="btn btn-outline" onclick="closeDateDetailModal();openEditScheduleModal(${s.id})" style="flex:1;font-size:12px;padding:6px">✏️ 수정</button><button class="btn" onclick="deleteSchedule(${s.id})" style="flex:1;font-size:12px;padding:6px;background:#ffebee;color:#c62828;border:1px solid #ffcdd2">🗑️ 삭제</button></div>`;
+            }
+            card.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px"><div style="flex:1"><div style="font-weight:700;color:#333;font-size:16px;margin-bottom:4px">${s.title}</div><div style="color:#666;font-size:14px;display:flex;gap:12px"><span>⏰ ${s.time}</span><span>👤 ${s.freelancer_name}</span></div></div><span style="background:${st.color}20;color:${st.color};padding:4px 10px;border-radius:12px;font-size:11px;font-weight:700;white-space:nowrap">${st.icon} ${st.text}</span></div>${s.memo?`<div style="color:#666;font-size:13px;padding-top:8px;border-top:1px solid #e0e0e0">📝 ${s.memo}</div>`:''}${timeLogHTML}${adminBtns}`;
             contentEl.appendChild(card);
         });
     }
     el('dateDetailModal').classList.add('show');
 }
 function closeDateDetailModal() { el('dateDetailModal').classList.remove('show'); }
+
+// 캘린더에서 날짜 클릭 → 해당 날짜 미리 선택된 상태로 일정 등록 모달 열기
+function openAddScheduleModalWithDate(dateStr) {
+    openAddScheduleModal();
+    // 해당 날짜를 미리 선택
+    if (!selectedDates.includes(dateStr)) {
+        selectedDates.push(dateStr);
+        selectedDates.sort();
+        dateTimePairs[dateStr] = [{time:'',memo:''}];
+    }
+    renderBulkDateSelector();
+    updateSelectedDatesDisplay();
+    renderTimeSettings();
+}
+
+// 관리자 강제 상태 변경 (알림 없이)
+async function adminForceStatus(id, newStatus) {
+    const statusNames = { confirmed:'일정확인', arrived:'현장도착', completed:'회의종료', transcription_done:'번문완료', submitted:'제출완료' };
+    if (!confirm(`이 일정을 "${statusNames[newStatus]}" 상태로 변경하시겠습니까?`)) return;
+    showLoading(true);
+    const updates = { status: newStatus };
+    // 회의종료 시 time_log 기본값 설정
+    if (newStatus === 'completed') {
+        const s = schedules.find(x=>x.id===id);
+        updates.time_log = { startTime: s?.time || '09:00', endTime: new Date().toLocaleTimeString('ko-KR',{hour12:false,hour:'2-digit',minute:'2-digit'}), totalMinutes: 0, totalWorkMinutes: 0 };
+    }
+    const { data, error } = await sb.from('schedules').update(updates).eq('id', id).select().single();
+    showLoading(false);
+    if (error) { alert('오류: '+error.message); return; }
+    if (data) { const idx=schedules.findIndex(s=>s.id===id); if(idx>=0) schedules[idx]=data; }
+    showToast(`${statusNames[newStatus]} 처리되었습니다`);
+    // 모달 내용 갱신
+    const dateStr = data.date;
+    const daySchedules = schedules.filter(s => s.date===dateStr);
+    showDateDetail(dateStr, daySchedules);
+    renderTodaySchedules(); renderCalendar(); renderScheduleList();
+}
