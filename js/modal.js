@@ -128,6 +128,23 @@ function openAddScheduleModal() {
 }
 function closeAddScheduleModal() { el('addScheduleModal').classList.remove('show'); selectedDates=[]; dateTimePairs={}; el('timeSettingsContainer').style.display='none'; }
 
+// 일정 복사: 기존 일정의 속기사, 교육지원청, 시간, 메모를 미리 채워서 등록 모달 열기
+function openCopyScheduleModal(id) {
+    const s = schedules.find(x => x.id === id);
+    if (!s) return;
+    openAddScheduleModal();
+    // 속기사 미리 선택
+    setTimeout(() => {
+        const fsel = el('scheduleFreelancer');
+        if (fsel) fsel.value = s.freelancer_id;
+        // 교육지원청 미리 선택
+        const tsel = el('scheduleTitleSelect');
+        if (tsel) { tsel.value = s.title; el('scheduleTitle').value = s.title; }
+        // 메모 미리 채우기
+        el('scheduleMemo').value = s.memo || '';
+    }, 100);
+}
+
 function updateFreelancerSuggestions() {
     const ml=el('meetingList'); if(!ml) return;
     ml.innerHTML='';
