@@ -67,8 +67,40 @@ function renderCalendar() {
             dayEl.style.cursor='pointer';
             dayEl.onclick = () => showDateDetail(dateStr, daySchedules);
         }
+        // PC 호버 툴팁 (일정이 있을 때만)
+        if (daySchedules.length) {
+            const ds = [...daySchedules].sort((a,b)=>a.time.localeCompare(b.time));
+            dayEl.addEventListener('mouseenter', function(e) {
+                removeCalendarTooltip();
+                const stIcons = {unconfirmed:'🔴',confirmed:'🟡',arrived:'🔵',completed:'🟣',transcription_done:'🟢',submitted:'✅'};
+                const tip = document.createElement('div');
+                tip.className = 'calendar-tooltip';
+                tip.id = 'calendarTooltip';
+                const dn = ['일','월','화','수','목','금','토'][new Date(dateStr+'T00:00:00').getDay()];
+                const mn = parseInt(dateStr.split('-')[1]), dy = parseInt(dateStr.split('-')[2]);
+                tip.innerHTML = `<div class="tooltip-title">${mn}월 ${dy}일 (${dn}) - ${ds.length}건</div>` +
+                    ds.map(s => `<div class="tooltip-item"><span class="tooltip-time">${s.time}</span><span class="tooltip-name">${s.freelancer_name}</span><span class="tooltip-loc">${s.title.replace('교육지원청','')}</span><span class="tooltip-status">${stIcons[s.status]||'⚪'}</span></div>`).join('');
+                document.body.appendChild(tip);
+                const rect = dayEl.getBoundingClientRect();
+                let left = rect.right + 8;
+                let top = rect.top;
+                // 화면 오른쪽 넘어가면 왼쪽에 표시
+                if (left + tip.offsetWidth > window.innerWidth - 10) left = rect.left - tip.offsetWidth - 8;
+                // 화면 아래쪽 넘어가면 위로 조정
+                if (top + tip.offsetHeight > window.innerHeight - 10) top = window.innerHeight - tip.offsetHeight - 10;
+                if (top < 10) top = 10;
+                tip.style.left = left + 'px';
+                tip.style.top = top + 'px';
+            });
+            dayEl.addEventListener('mouseleave', removeCalendarTooltip);
+        }
         gridEl.appendChild(dayEl);
     }
+}
+
+function removeCalendarTooltip() {
+    const t = document.getElementById('calendarTooltip');
+    if (t) t.remove();
 }
 
 function changeMonth(delta) {
