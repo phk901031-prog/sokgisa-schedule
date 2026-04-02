@@ -79,7 +79,7 @@ function renderCalendar() {
                 const dn = ['일','월','화','수','목','금','토'][new Date(dateStr+'T00:00:00').getDay()];
                 const mn = parseInt(dateStr.split('-')[1]), dy = parseInt(dateStr.split('-')[2]);
                 tip.innerHTML = `<div class="tooltip-title">${mn}월 ${dy}일 (${dn}) - ${ds.length}건</div>` +
-                    ds.map(s => `<div class="tooltip-item"><span class="tooltip-time">${s.time}</span><span class="tooltip-name">${s.freelancer_name}</span><span class="tooltip-loc">${s.title.replace('교육지원청','')}</span><span class="tooltip-status">${stIcons[s.status]||'⚪'}</span></div>`).join('');
+                    ds.map(s => `<div class="tooltip-item"><span class="tooltip-time">${s.time}</span><span class="tooltip-name">${s.freelancer_name}</span><span class="tooltip-loc">${s.title}</span><span class="tooltip-status">${stIcons[s.status]||'⚪'}</span></div>`).join('');
                 document.body.appendChild(tip);
                 const rect = dayEl.getBoundingClientRect();
                 let left = rect.right + 8;
