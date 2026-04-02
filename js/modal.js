@@ -194,7 +194,7 @@ function renderTimeSettings() {
         // 날짜 헤더
         const dateHeader=document.createElement('div');
         dateHeader.style.cssText='display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;margin-top:12px';
-        dateHeader.innerHTML=`<div style="font-weight:700;color:#333;font-size:15px">📅 ${label}</div><button type="button" onclick="addTimeSlot('${dateStr}')" style="background:#e3f2fd;color:#1565c0;border:1px solid #90caf9;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;font-weight:600">+ 시간 추가</button>`;
+        dateHeader.innerHTML=`<div style="font-weight:700;color:#333;font-size:15px">📅 ${label}</div><div style="display:flex;gap:6px"><button type="button" onclick="addTimeSlot('${dateStr}')" style="background:#e3f2fd;color:#1565c0;border:1px solid #90caf9;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;font-weight:600">+ 시간 추가</button><button type="button" onclick="removeDate('${dateStr}')" style="background:#ffebee;color:#c62828;border:1px solid #ffcdd2;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;font-weight:600">날짜 삭제</button></div>`;
         listEl.appendChild(dateHeader);
         // 각 시간 슬롯
         slots.forEach((slot, i) => {
@@ -205,6 +205,12 @@ function renderTimeSettings() {
             listEl.appendChild(row);
         });
     });
+}
+
+function removeDate(dateStr) {
+    const idx = selectedDates.indexOf(dateStr);
+    if (idx > -1) { selectedDates.splice(idx, 1); delete dateTimePairs[dateStr]; }
+    renderBulkDateSelector(); updateSelectedDatesDisplay(); renderTimeSettings();
 }
 
 function addTimeSlot(dateStr) {
