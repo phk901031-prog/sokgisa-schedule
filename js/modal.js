@@ -9,15 +9,18 @@ function loadFreelancerOptions() {
     if (searchInput) searchInput.value = '';
 }
 
-// 일정 등록 모달 속기사 검색 필터
+// 일정 등록 모달 속기사 검색 필터 (1명만 매칭되면 자동 선택)
 function filterFreelancerSelect(query) {
     const sel = el('scheduleFreelancer');
     const q = query.trim().toLowerCase();
     sel.innerHTML = '<option value="">선택하세요</option>';
-    freelancerProfiles.filter(p => !q || p.name.toLowerCase().includes(q)).forEach(p => {
+    const matched = freelancerProfiles.filter(p => !q || p.name.toLowerCase().includes(q));
+    matched.forEach(p => {
         const o = document.createElement('option'); o.value = p.id; o.textContent = p.name;
         sel.appendChild(o);
     });
+    // 검색 결과가 1명이면 자동 선택
+    if (q && matched.length === 1) sel.value = matched[0].id;
 }
 
 // 알림 보내기 모달 속기사 검색 필터
