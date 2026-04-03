@@ -58,6 +58,8 @@ async function loadSessionUser(userId) {
     setupRealtime();
     initOneSignal();
     showMainScreen();
+    // 읽지 않은 알림 체크
+    checkUnreadNotifications();
 }
 
 // ========================

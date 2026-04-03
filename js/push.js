@@ -128,17 +128,80 @@ async function sendCustomPush() {
         showLoading(true);
         for (const cb of checked) {
             await sendPushNotification(cb.value, message, '📢 관리자 알림');
+            await saveNotification(cb.value, message);
         }
         showLoading(false);
         showToast(`${checked.length}명에게 알림을 보냈습니다`);
     } else {
-        if (!confirm('전체 속기사에게 알림을 보내시겠습니까?')) return;
+        if (!confirm('전체에게 알림을 보내시겠습니까?')) return;
         showLoading(true);
-        for (const p of freelancerProfiles) {
+        // 전체: 속기사 + 관리자 모두에게
+        const allUsers = [...freelancerProfiles];
+        // 현재 사용자(보낸 사람) 제외하고 관리자 중 freelancerProfiles에 없는 관리자 추가
+        if (allProfiles.length) {
+            allProfiles.filter(p => (p.role==='admin'||p.role==='superadmin') && p.id !== currentUser.id && !allUsers.find(u=>u.id===p.id)).forEach(p => allUsers.push(p));
+        }
+        for (const p of allUsers) {
             await sendPushNotification(p.id, message, '📢 관리자 알림');
+            await saveNotification(p.id, message);
         }
         showLoading(false);
-        showToast(`전체 속기사 ${freelancerProfiles.length}명에게 알림을 보냈습니다`);
+        showToast(`전체 ${allUsers.length}명에게 알림을 보냈습니다`);
     }
     closeSendPushModal();
+}
+
+// DB에 알림 저장
+async function saveNotification(recipientId, message, title) {
+    await sb.from('notifications').insert({ recipient_id: recipientId, message, title: title || '📢 관리자 알림' });
+}
+
+// ========================
+// 알림함 (읽지 않은 알림 표시)
+// ========================
+async function loadUnreadNotifications() {
+    const { data } = await sb.from('notifications').select('*').eq('is_read', false).order('created_at', { ascending: false });
+    return data || [];
+}
+
+async function checkUnreadNotifications() {
+    const unread = await loadUnreadNotifications();
+    const badge = el('notifBadge');
+    if (badge) {
+        if (unread.length > 0) {
+            badge.style.display = 'block';
+            badge.textContent = unread.length > 9 ? '9+' : unread.length;
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+    return unread;
+}
+
+async function openNotificationModal() {
+    const unread = await loadUnreadNotifications();
+    el('unreadCount').textContent = unread.length > 0 ? `(${unread.length}건)` : '';
+    const listEl = el('notificationList');
+    if (!unread.length) {
+        listEl.innerHTML = '<div style="padding:30px;text-align:center;color:#999">읽지 않은 알림이 없습니다.</div>';
+    } else {
+        listEl.innerHTML = unread.map(n => {
+            const d = new Date(n.created_at);
+            const kst = new Date(d.getTime() + 9*60*60*1000);
+            const timeStr = `${kst.getFullYear()}-${pad(kst.getMonth()+1)}-${pad(kst.getDate())} ${pad(kst.getHours())}:${pad(kst.getMinutes())}`;
+            return `<div style="padding:12px;border-bottom:1px solid #f0f0f0"><div style="font-size:12px;color:#999;margin-bottom:4px">${timeStr}</div><div style="font-size:14px;color:#333;white-space:pre-wrap">${n.message}</div></div>`;
+        }).join('');
+    }
+    el('notificationModal').classList.add('show');
+}
+
+function closeNotificationModal() { el('notificationModal').classList.remove('show'); }
+
+async function markAllRead() {
+    showLoading(true);
+    await sb.from('notifications').update({ is_read: true }).eq('recipient_id', currentUser.id).eq('is_read', false);
+    showLoading(false);
+    el('notifBadge').style.display = 'none';
+    closeNotificationModal();
+    showToast('모든 알림을 확인했습니다');
 }

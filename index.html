@@ -84,6 +84,7 @@
                 <button class="btn btn-purple" id="adminMgmtTab" onclick="switchView('admins')" style="display:none">관리자 관리</button>
             </div>
             <button class="btn btn-secondary" onclick="refreshData()" style="padding:10px 16px">🔄 새로고침</button>
+            <button class="btn" onclick="openNotificationModal()" style="padding:10px 16px;background:#fff;border:1px solid #ddd;position:relative" id="notifBellBtn">🔔<span id="notifBadge" style="display:none;position:absolute;top:-4px;right:-4px;background:#f44336;color:#fff;font-size:10px;font-weight:700;width:18px;height:18px;border-radius:50%;line-height:18px;text-align:center">0</span></button>
             <button class="btn btn-logout" onclick="handleLogout()">로그아웃</button>
         </div>
     </div>
@@ -408,6 +409,18 @@
         <div style="display:flex;gap:10px;margin-top:20px">
             <button class="btn btn-purple" style="flex:1" onclick="promoteToAdmin()">관리자로 승격</button>
             <button class="btn btn-outline" style="flex:1" onclick="closeAddAdminModal()">취소</button>
+        </div>
+    </div>
+</div>
+
+<!-- 알림함 팝업 -->
+<div class="modal" id="notificationModal">
+    <div class="modal-content">
+        <div class="modal-header">📢 새 알림 <span id="unreadCount" style="color:#2196F3"></span><button class="modal-close" onclick="closeNotificationModal()">×</button></div>
+        <div id="notificationList" style="max-height:400px;overflow-y:auto"></div>
+        <div style="margin-top:14px;display:flex;gap:10px">
+            <button class="btn btn-primary" onclick="markAllRead()" style="flex:1">모두 확인</button>
+            <button class="btn btn-outline" onclick="closeNotificationModal()" style="flex:1">닫기</button>
         </div>
     </div>
 </div>
