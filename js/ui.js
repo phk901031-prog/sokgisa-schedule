@@ -23,6 +23,7 @@ function showMainScreen() {
     document.getElementById('welcomeMessage').innerHTML = `${currentUser.name}님 환영합니다${badge}`;
     document.getElementById('viewToggle').style.display = isAdmin ? 'flex' : 'none';
     if (isSA) show('adminMgmtTab');
+    if (isAdmin) show('statsTab');
     if (isAdmin) {
         switchViewInternal('admin');
     } else {
@@ -38,8 +39,8 @@ function switchView(view) {
 
 function switchViewInternal(view) {
     currentView = view;
-    hide('adminView'); hide('freelancerView'); hide('usersView'); hide('adminsView');
-    const titles = { admin:'관리자 대시보드', freelancer:'속기사 일정', users:'회원 관리', admins:'관리자 관리' };
+    hide('adminView'); hide('freelancerView'); hide('usersView'); hide('adminsView'); hide('statsView');
+    const titles = { admin:'관리자 대시보드', freelancer:'속기사 일정', users:'회원 관리', admins:'관리자 관리', stats:'📊 통계' };
     document.getElementById('pageTitle').textContent = titles[view] || '';
     if (view === 'admin') {
         show('adminView');
@@ -55,6 +56,9 @@ function switchViewInternal(view) {
     } else if (view === 'admins') {
         show('adminsView');
         renderAdminUsers();
+    } else if (view === 'stats') {
+        show('statsView');
+        renderStats();
     }
 }
 

@@ -80,6 +80,7 @@
                 <button class="btn btn-outline active" onclick="switchView('admin')">관리자</button>
                 <button class="btn btn-outline" onclick="switchView('freelancer')">속기사</button>
                 <button class="btn btn-outline" onclick="switchView('users')">회원 관리</button>
+                <button class="btn btn-outline" id="statsTab" onclick="switchView('stats')" style="display:none">📊 통계</button>
                 <button class="btn btn-purple" id="adminMgmtTab" onclick="switchView('admins')" style="display:none">관리자 관리</button>
             </div>
             <button class="btn btn-secondary" onclick="refreshData()" style="padding:10px 16px">🔄 새로고침</button>
@@ -212,6 +213,20 @@
             </div>
             <div id="approvedUsersList"></div>
         </div>
+    </div>
+
+    <!-- 통계 화면 (관리자 전용) -->
+    <div id="statsView" style="display:none">
+        <!-- 기간 선택 -->
+        <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;align-items:center">
+            <label style="font-weight:600;color:#333">📅 기간:</label>
+            <button class="btn btn-outline active" onclick="setStatsPeriod('week',event)" id="stats-week">이번 주</button>
+            <button class="btn btn-outline" onclick="setStatsPeriod('month',event)" id="stats-month">이번 달</button>
+            <select id="statsMonthSelect" onchange="setStatsPeriod('custom')" style="padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px"></select>
+            <button class="btn btn-outline" onclick="setStatsPeriod('all',event)" id="stats-all">전체</button>
+        </div>
+        <!-- 통계 내용 -->
+        <div id="statsContent"></div>
     </div>
 
     <!-- 슈퍼관리자: 관리자 관리 화면 -->
@@ -436,6 +451,7 @@
 <script src="js/admin.js"></script>
 <script src="js/modal.js"></script>
 <script src="js/excel.js"></script>
+<script src="js/stats.js"></script>
 <script src="js/auth.js"></script>
 </body>
 </html>
