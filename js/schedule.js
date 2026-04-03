@@ -35,7 +35,7 @@ function renderScheduleList() {
         const isMobile = window.innerWidth <= 768;
         if (!isMobile) {
             const thdr=document.createElement('div');
-            thdr.style.cssText='display:grid;grid-template-columns:70px 2fr 1fr 100px 140px;gap:8px;padding:11px 16px;background:#f5f5f5;font-weight:700;font-size:13px;color:#666;border-bottom:2px solid #e0e0e0';
+            thdr.style.cssText='display:grid;grid-template-columns:50px 2fr 80px 80px auto;gap:6px;padding:11px 16px;background:#f5f5f5;font-weight:700;font-size:13px;color:#666;border-bottom:2px solid #e0e0e0';
             thdr.innerHTML='<div>시간</div><div>회의명</div><div>속기사</div><div>상태</div><div style="text-align:center">작업</div>';
             tbl.appendChild(thdr);
         }
@@ -57,7 +57,7 @@ function renderScheduleList() {
                 row.style.cssText=`padding:12px 14px;border-bottom:${i===daySchedules.length-1?'none':'1px solid #f0f0f0'}`;
                 row.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-weight:700;color:#333;font-size:15px">${s.time}</span><span style="background:${st.color}15;color:${st.color};padding:3px 8px;border-radius:12px;font-size:11px;font-weight:600;white-space:nowrap">${st.icon} ${st.text}</span></div><div style="font-weight:500;color:#333;margin-bottom:3px">${s.title}</div><div style="color:#666;font-size:13px;margin-bottom:6px">👤 ${s.freelancer_name}</div>${s.memo?`<div style="font-size:12px;color:#999;margin-bottom:6px">📝 ${s.memo}</div>`:''}<div style="display:flex;gap:6px">${actionBtns}</div>`;
             } else {
-                row.style.cssText=`display:grid;grid-template-columns:70px 2fr 1fr 100px 140px;gap:8px;padding:13px 16px;align-items:center;border-bottom:${i===daySchedules.length-1?'none':'1px solid #f0f0f0'};cursor:pointer;transition:background .2s`;
+                row.style.cssText=`display:grid;grid-template-columns:50px 2fr 80px 80px auto;gap:6px;padding:13px 16px;align-items:center;border-bottom:${i===daySchedules.length-1?'none':'1px solid #f0f0f0'};cursor:pointer;transition:background .2s`;
                 row.onmouseover=function(){this.style.background='#f9f9f9'};
                 row.onmouseout=function(){this.style.background='#fff'};
                 row.innerHTML=`<div style="font-weight:600;color:#333">${s.time}</div><div><div style="font-weight:500;color:#333;margin-bottom:3px">${s.title}</div>${s.memo?`<div style="font-size:12px;color:#999">📝 ${s.memo}</div>`:''}</div><div style="color:#666">${s.freelancer_name}</div><div><span style="background:${st.color}15;color:${st.color};padding:3px 8px;border-radius:12px;font-size:11px;font-weight:600;white-space:nowrap">${st.icon} ${st.text}</span></div><div style="display:flex;gap:5px;justify-content:center">${actionBtns}</div>`;
