@@ -399,16 +399,14 @@
         <div class="modal-header">알림 보내기 <button class="modal-close" onclick="closeSendPushModal()">×</button></div>
         <div class="form-group" style="margin-bottom:14px">
             <label>대상</label>
-            <div style="display:flex;gap:10px;margin-top:6px">
-                <label style="display:flex;align-items:center;gap:4px;cursor:pointer"><input type="radio" name="pushTarget" value="all" checked onchange="togglePushTarget()"> 전체 속기사</label>
-                <label style="display:flex;align-items:center;gap:4px;cursor:pointer"><input type="radio" name="pushTarget" value="individual" onchange="togglePushTarget()"> 개별 선택</label>
+            <div style="display:flex;gap:20px;margin-top:6px">
+                <label style="display:flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap"><input type="radio" name="pushTarget" value="all" checked onchange="togglePushTarget()"> 전체 속기사</label>
+                <label style="display:flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap"><input type="radio" name="pushTarget" value="individual" onchange="togglePushTarget()"> 개별 선택</label>
             </div>
         </div>
         <div class="form-group" id="pushIndividualSelect" style="display:none;margin-bottom:14px">
-            <label>속기사 선택</label>
-            <select id="pushFreelancerSelect" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;font-size:14px">
-                <option value="">선택하세요</option>
-            </select>
+            <label>속기사 선택 (여러 명 가능)</label>
+            <div id="pushFreelancerCheckboxes" style="max-height:200px;overflow-y:auto;border:1px solid #ddd;border-radius:6px;padding:10px;margin-top:6px"></div>
         </div>
         <div class="form-group" style="margin-bottom:20px">
             <label>메시지</label>

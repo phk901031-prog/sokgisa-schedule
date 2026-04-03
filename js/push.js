@@ -96,11 +96,13 @@ async function sendPushToAllAdmins(message, title = '속기사 일정 관리') {
 // 관리자 커스텀 알림 보내기
 // ========================
 function openSendPushModal() {
-    const sel = el('pushFreelancerSelect');
-    sel.innerHTML = '<option value="">선택하세요</option>';
+    const container = el('pushFreelancerCheckboxes');
+    container.innerHTML = '';
     freelancerProfiles.forEach(p => {
-        const o = document.createElement('option'); o.value = p.id; o.textContent = p.name;
-        sel.appendChild(o);
+        const label = document.createElement('label');
+        label.style.cssText = 'display:flex;align-items:center;gap:8px;padding:6px 4px;cursor:pointer;border-bottom:1px solid #f0f0f0';
+        label.innerHTML = `<input type="checkbox" value="${p.id}" style="width:18px;height:18px"> <span style="font-size:14px">${p.name}</span>`;
+        container.appendChild(label);
     });
     el('pushMessage').value = '';
     document.querySelector('input[name="pushTarget"][value="all"]').checked = true;
@@ -119,14 +121,16 @@ async function sendCustomPush() {
     if (!message) { alert('메시지를 입력하세요.'); return; }
     const target = document.querySelector('input[name="pushTarget"]:checked').value;
     if (target === 'individual') {
-        const freelancerId = el('pushFreelancerSelect').value;
-        if (!freelancerId) { alert('속기사를 선택하세요.'); return; }
-        const name = freelancerProfiles.find(p => p.id === freelancerId)?.name || '';
-        if (!confirm(`${name}님에게 알림을 보내시겠습니까?`)) return;
+        const checked = [...el('pushFreelancerCheckboxes').querySelectorAll('input[type="checkbox"]:checked')];
+        if (!checked.length) { alert('속기사를 선택하세요.'); return; }
+        const names = checked.map(cb => freelancerProfiles.find(p => p.id === cb.value)?.name).filter(Boolean);
+        if (!confirm(`${names.join(', ')}님에게 알림을 보내시겠습니까?`)) return;
         showLoading(true);
-        await sendPushNotification(freelancerId, message, '📢 관리자 알림');
+        for (const cb of checked) {
+            await sendPushNotification(cb.value, message, '📢 관리자 알림');
+        }
         showLoading(false);
-        showToast(`${name}님에게 알림을 보냈습니다`);
+        showToast(`${checked.length}명에게 알림을 보냈습니다`);
     } else {
         if (!confirm('전체 속기사에게 알림을 보내시겠습니까?')) return;
         showLoading(true);
