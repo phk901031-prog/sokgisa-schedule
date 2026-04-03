@@ -93,13 +93,21 @@ async function syncLocations() {
     showToast(msg);
 }
 
-function renderLocationSelect() {
+function renderLocationSelect(filter) {
     const sel = el('scheduleTitleSelect');
     const cur = el('scheduleTitle').value;
+    const q = (filter || '').trim().toLowerCase();
     sel.innerHTML = '<option value="">선택하세요</option>';
-    locationList.forEach(loc => {
+    const matched = locationList.filter(loc => !q || loc.toLowerCase().includes(q));
+    matched.forEach(loc => {
         sel.innerHTML += `<option value="${loc}"${loc===cur?' selected':''}>${loc}</option>`;
     });
+    // 검색 결과가 1개면 자동 선택
+    if (q && matched.length === 1) { sel.value = matched[0]; el('scheduleTitle').value = matched[0]; }
+}
+
+function filterLocationSelect(query) {
+    renderLocationSelect(query);
 }
 
 function onLocationSelect() {
@@ -152,6 +160,7 @@ function openAddScheduleModal() {
     el('scheduleTitle').value=''; el('scheduleTitleSelect').value=''; el('scheduleMemo').value='';
     el('timeSettingsContainer').style.display='none';
     el('addLocationRow').style.display='none';
+    const locSearch = el('locationSearch'); if (locSearch) locSearch.value = '';
 }
 function closeAddScheduleModal() { el('addScheduleModal').classList.remove('show'); selectedDates=[]; dateTimePairs={}; el('timeSettingsContainer').style.display='none'; }
 

@@ -245,6 +245,7 @@
             <div class="form-group" style="margin-bottom:16px">
                 <label>교육지원청 선택</label>
                 <div style="display:flex;gap:8px;align-items:center">
+                    <input type="text" id="locationSearch" placeholder="검색" oninput="filterLocationSelect(this.value)" style="width:100px;padding:9px;border:1px solid #ddd;border-radius:6px;font-size:14px">
                     <select id="scheduleTitleSelect" onchange="onLocationSelect()" style="flex:1;padding:9px;border:1px solid #ddd;border-radius:6px;font-size:14px">
                         <option value="">선택하세요</option>
                     </select>
