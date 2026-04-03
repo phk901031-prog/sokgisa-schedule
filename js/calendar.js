@@ -54,14 +54,21 @@ function renderCalendar() {
         daySchedules = applySearchFilter(daySchedules);
         const dayEl = document.createElement('div');
         const dayOfWeek = new Date(year, month, date).getDay(); // 0=일, 6=토
-        // 불가 날짜 체크: 관리자 → 선택된 속기사, 속기사 → 본인
-        const checkFreelancerId = isAdmin ? selectedFreelancer : (currentUser.role==='freelancer' ? currentUser.id : '');
-        const isUnavail = checkFreelancerId && unavailableDates.some(u => u.freelancer_id===checkFreelancerId && u.date===dateStr);
+        // 불가 날짜 체크
+        const dayUnavails = isAdmin
+            ? unavailableDates.filter(u => u.date===dateStr).map(u => { const p=freelancerProfiles.find(f=>f.id===u.freelancer_id); return p?.name||''; }).filter(Boolean)
+            : (currentUser.role==='freelancer' && unavailableDates.some(u => u.freelancer_id===currentUser.id && u.date===dateStr) ? [currentUser.name] : []);
+        const isUnavail = dayUnavails.length > 0;
         dayEl.className = 'calendar-day' + (daySchedules.length ? ' has-event' : '') + (dateStr===todayStr ? ' today' : '');
-        if (isUnavail) dayEl.style.background = '#ffebee';
+        if (isUnavail && !isAdmin) dayEl.style.background = '#ffebee';
         const dayNumColor = dateStr===todayStr ? '' : dayOfWeek===6 ? 'color:#2196F3;' : dayOfWeek===0 ? 'color:#f44336;' : '';
         dayEl.innerHTML = `<div class="day-number${dateStr===todayStr?' today-num':''}" style="${dayNumColor}">${date}</div>`;
-        if (isUnavail) { const badge=document.createElement('div'); badge.style.cssText='font-size:9px;color:#c62828;font-weight:700'; badge.textContent='불가'; dayEl.appendChild(badge); }
+        if (isUnavail && isAdmin) {
+            const unavailEl = document.createElement('div'); unavailEl.style.cssText='font-size:9px;color:#c62828;line-height:1.3;margin-top:2px';
+            unavailEl.innerHTML = dayUnavails.map(n => `🚫${n}`).join('<br>');
+            dayEl.appendChild(unavailEl);
+        }
+        if (isUnavail && !isAdmin) { const badge=document.createElement('div'); badge.style.cssText='font-size:9px;color:#c62828;font-weight:700'; badge.textContent='불가'; dayEl.appendChild(badge); }
         if (daySchedules.length) {
             const prev = document.createElement('div'); prev.className='event-preview';
             prev.innerHTML = daySchedules.slice(0,3).map(s=>`<span class="event-dot"></span>${s.freelancer_name.slice(0,2)}-${s.title.replace('교육지원청','')}`).join('<br>');
