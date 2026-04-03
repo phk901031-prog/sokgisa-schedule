@@ -183,9 +183,14 @@ async function adminForceStatus(id, newStatus) {
     if (error) { alert('오류: '+error.message); return; }
     if (data) { const idx=schedules.findIndex(s=>s.id===id); if(idx>=0) schedules[idx]=data; }
     showToast(`${statusNames[newStatus]} 처리되었습니다`);
-    // 모달 내용 갱신
-    const dateStr = data.date;
-    const daySchedules = schedules.filter(s => s.date===dateStr);
-    showDateDetail(dateStr, daySchedules);
+    if (newStatus === 'submitted') {
+        // 제출완료 시 팝업 닫기
+        closeDateDetailModal();
+    } else {
+        // 다른 상태 변경 시 모달 내용 갱신
+        const dateStr = data.date;
+        const daySchedules = schedules.filter(s => s.date===dateStr);
+        showDateDetail(dateStr, daySchedules);
+    }
     renderTodaySchedules(); renderCalendar(); renderScheduleList();
 }
