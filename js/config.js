@@ -32,3 +32,4 @@ let selectedDates    = [];
 let dateTimePairs    = {};
 let ongoingMeetings  = {};
 let meetingTitlesHistory = [];
+let copyDefaults     = null; // 복사 시 기본값 {time, memo}

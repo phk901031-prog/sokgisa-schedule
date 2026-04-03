@@ -120,7 +120,7 @@ async function saveNewLocation() {
 
 function openAddScheduleModal() {
     el('addScheduleModal').classList.add('show');
-    selectedDates=[]; dateTimePairs={}; bulkDate=new Date();
+    selectedDates=[]; dateTimePairs={}; bulkDate=new Date(); copyDefaults=null;
     loadFreelancerOptions(); loadLocations(); renderBulkDateSelector(); updateSelectedDatesDisplay();
     el('scheduleTitle').value=''; el('scheduleTitleSelect').value=''; el('scheduleMemo').value='';
     el('timeSettingsContainer').style.display='none';
@@ -132,15 +132,16 @@ function closeAddScheduleModal() { el('addScheduleModal').classList.remove('show
 function openCopyScheduleModal(id) {
     const s = schedules.find(x => x.id === id);
     if (!s) return;
+    // 복사 기본값 저장 (날짜 선택 시 자동 적용)
+    copyDefaults = { time: s.time || '', memo: s.memo || '' };
     openAddScheduleModal();
-    // 속기사 미리 선택
+    copyDefaults = { time: s.time || '', memo: s.memo || '' }; // openAddScheduleModal이 null로 초기화하므로 다시 설정
+    // 속기사, 교육지원청, 메모 미리 선택
     setTimeout(() => {
         const fsel = el('scheduleFreelancer');
         if (fsel) fsel.value = s.freelancer_id;
-        // 교육지원청 미리 선택
         const tsel = el('scheduleTitleSelect');
         if (tsel) { tsel.value = s.title; el('scheduleTitle').value = s.title; }
-        // 메모 미리 채우기
         el('scheduleMemo').value = s.memo || '';
     }, 100);
 }
@@ -173,7 +174,15 @@ function renderBulkDateSelector() {
 function toggleDateSelection(dateStr) {
     const idx=selectedDates.indexOf(dateStr);
     if(idx>-1){ selectedDates.splice(idx,1); delete dateTimePairs[dateStr]; }
-    else { selectedDates.push(dateStr); selectedDates.sort(); dateTimePairs[dateStr]=[{time:'',memo:''}]; }
+    else {
+        selectedDates.push(dateStr); selectedDates.sort();
+        // 복사 모드이면 기본 시간/메모 자동 채우기
+        if (copyDefaults) {
+            dateTimePairs[dateStr] = [{time: copyDefaults.time, memo: copyDefaults.memo}];
+        } else {
+            dateTimePairs[dateStr] = [{time:'',memo:''}];
+        }
+    }
     renderBulkDateSelector(); updateSelectedDatesDisplay(); renderTimeSettings();
 }
 
