@@ -13,22 +13,23 @@ function loadFreelancerOptions() {
 let locationList = [];
 
 async function loadLocations() {
-    // 1. 먼저 localStorage에 남아있는 목록을 DB에 자동 병합 (1회성)
-    const saved = localStorage.getItem('locationList');
-    if (saved) {
-        try {
-            const localList = JSON.parse(saved);
-            if (Array.isArray(localList) && localList.length > 0) {
-                const { data: dbData } = await sb.from('locations').select('name');
-                const dbList = (dbData || []).map(d => d.name);
-                const toAdd = localList.filter(loc => loc && !dbList.includes(loc));
-                if (toAdd.length > 0) {
-                    await sb.from('locations').insert(toAdd.map(name => ({ name })));
+    // 1. localStorage → DB 자동 병합 (1회만, synced 플래그로 제어)
+    if (!localStorage.getItem('locationsSynced')) {
+        const saved = localStorage.getItem('locationList');
+        if (saved) {
+            try {
+                const localList = JSON.parse(saved);
+                if (Array.isArray(localList) && localList.length > 0) {
+                    const { data: dbData } = await sb.from('locations').select('name');
+                    const dbList = (dbData || []).map(d => d.name);
+                    const toAdd = localList.filter(loc => loc && !dbList.includes(loc));
+                    if (toAdd.length > 0) {
+                        await sb.from('locations').insert(toAdd.map(name => ({ name })));
+                    }
                 }
-                // 병합 완료 후 localStorage 플래그 설정 (다음부터 스킵)
-                localStorage.setItem('locationsSynced', 'true');
-            }
-        } catch(e) { console.log('localStorage 병합 오류:', e); }
+            } catch(e) { console.log('localStorage 병합 오류:', e); }
+        }
+        localStorage.setItem('locationsSynced', 'true');
     }
     // 2. DB에서 최신 목록 로드
     const { data, error } = await sb.from('locations').select('name').order('name');
@@ -92,6 +93,7 @@ async function deleteLocation() {
     showLoading(true);
     await sb.from('locations').delete().eq('name', val);
     locationList = locationList.filter(loc => loc !== val);
+    // localStorage도 DB 기준으로 갱신 (삭제된 항목 부활 방지)
     localStorage.setItem('locationList', JSON.stringify(locationList));
     showLoading(false);
     renderLocationSelect();
