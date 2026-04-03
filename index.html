@@ -106,6 +106,7 @@
             <div style="display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap">
                 <button class="btn btn-primary" onclick="openAddScheduleModal()">+ 새 일정 등록</button>
                 <button class="btn" onclick="downloadExcel()" style="background:#10b981;color:#fff">📊 엑셀 다운로드</button>
+                <button class="btn" onclick="openSendPushModal()" style="background:#ff9800;color:#fff">📢 알림 보내기</button>
             </div>
         </div>
 
@@ -388,6 +389,34 @@
         <div style="display:flex;gap:10px;margin-top:20px">
             <button class="btn btn-purple" style="flex:1" onclick="promoteToAdmin()">관리자로 승격</button>
             <button class="btn btn-outline" style="flex:1" onclick="closeAddAdminModal()">취소</button>
+        </div>
+    </div>
+</div>
+
+<!-- 알림 보내기 모달 -->
+<div class="modal" id="sendPushModal">
+    <div class="modal-content">
+        <div class="modal-header">알림 보내기 <button class="modal-close" onclick="closeSendPushModal()">×</button></div>
+        <div class="form-group" style="margin-bottom:14px">
+            <label>대상</label>
+            <div style="display:flex;gap:10px;margin-top:6px">
+                <label style="display:flex;align-items:center;gap:4px;cursor:pointer"><input type="radio" name="pushTarget" value="all" checked onchange="togglePushTarget()"> 전체 속기사</label>
+                <label style="display:flex;align-items:center;gap:4px;cursor:pointer"><input type="radio" name="pushTarget" value="individual" onchange="togglePushTarget()"> 개별 선택</label>
+            </div>
+        </div>
+        <div class="form-group" id="pushIndividualSelect" style="display:none;margin-bottom:14px">
+            <label>속기사 선택</label>
+            <select id="pushFreelancerSelect" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;font-size:14px">
+                <option value="">선택하세요</option>
+            </select>
+        </div>
+        <div class="form-group" style="margin-bottom:20px">
+            <label>메시지</label>
+            <textarea id="pushMessage" placeholder="보낼 메시지를 입력하세요" style="min-height:100px"></textarea>
+        </div>
+        <div style="display:flex;gap:10px">
+            <button class="btn" onclick="sendCustomPush()" style="flex:1;background:#ff9800;color:#fff">📢 보내기</button>
+            <button class="btn btn-outline" style="flex:1" onclick="closeSendPushModal()">취소</button>
         </div>
     </div>
 </div>

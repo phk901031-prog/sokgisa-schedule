@@ -91,3 +91,50 @@ async function sendPushNotification(freelancerId, message, title = '속기사 �
 async function sendPushToAllAdmins(message, title = '속기사 일정 관리') {
     await sendPushNotification('all_admins', message, title);
 }
+
+// ========================
+// 관리자 커스텀 알림 보내기
+// ========================
+function openSendPushModal() {
+    const sel = el('pushFreelancerSelect');
+    sel.innerHTML = '<option value="">선택하세요</option>';
+    freelancerProfiles.forEach(p => {
+        const o = document.createElement('option'); o.value = p.id; o.textContent = p.name;
+        sel.appendChild(o);
+    });
+    el('pushMessage').value = '';
+    document.querySelector('input[name="pushTarget"][value="all"]').checked = true;
+    el('pushIndividualSelect').style.display = 'none';
+    el('sendPushModal').classList.add('show');
+}
+function closeSendPushModal() { el('sendPushModal').classList.remove('show'); }
+
+function togglePushTarget() {
+    const isIndividual = document.querySelector('input[name="pushTarget"]:checked').value === 'individual';
+    el('pushIndividualSelect').style.display = isIndividual ? 'block' : 'none';
+}
+
+async function sendCustomPush() {
+    const message = el('pushMessage').value.trim();
+    if (!message) { alert('메시지를 입력하세요.'); return; }
+    const target = document.querySelector('input[name="pushTarget"]:checked').value;
+    if (target === 'individual') {
+        const freelancerId = el('pushFreelancerSelect').value;
+        if (!freelancerId) { alert('속기사를 선택하세요.'); return; }
+        const name = freelancerProfiles.find(p => p.id === freelancerId)?.name || '';
+        if (!confirm(`${name}님에게 알림을 보내시겠습니까?`)) return;
+        showLoading(true);
+        await sendPushNotification(freelancerId, message, '📢 관리자 알림');
+        showLoading(false);
+        showToast(`${name}님에게 알림을 보냈습니다`);
+    } else {
+        if (!confirm('전체 속기사에게 알림을 보내시겠습니까?')) return;
+        showLoading(true);
+        for (const p of freelancerProfiles) {
+            await sendPushNotification(p.id, message, '📢 관리자 알림');
+        }
+        showLoading(false);
+        showToast(`전체 속기사 ${freelancerProfiles.length}명에게 알림을 보냈습니다`);
+    }
+    closeSendPushModal();
+}
