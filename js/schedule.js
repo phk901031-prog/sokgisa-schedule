@@ -46,8 +46,11 @@ function renderScheduleList() {
             const row=document.createElement('div');
             // 강제 상태 변경 버튼 + 수정 + 삭제
             const nextSt = {unconfirmed:{next:'confirmed',text:'일정확인',bg:'#fff3e0',color:'#e65100',border:'#ffcc80'},confirmed:{next:'arrived',text:'현장도착',bg:'#e3f2fd',color:'#1565c0',border:'#90caf9'},arrived:{next:'completed',text:'회의종료',bg:'#f3e5f5',color:'#7b1fa2',border:'#ce93d8'},completed:{next:'transcription_done',text:'번문완료',bg:'#e8f5e9',color:'#2e7d32',border:'#a5d6a7'},transcription_done:{next:'submitted',text:'제출완료',bg:'#e0f2f1',color:'#00695c',border:'#80cbc4'}};
+            const prevSt = {confirmed:{prev:'unconfirmed',text:'미확인'},arrived:{prev:'confirmed',text:'일정확인'},completed:{prev:'arrived',text:'현장도착'},transcription_done:{prev:'completed',text:'회의종료'},submitted:{prev:'transcription_done',text:'번문완료'}};
             const ns = nextSt[s.status];
+            const ps = prevSt[s.status];
             let actionBtns = '';
+            if (ps) actionBtns += `<button class="btn" onclick="event.stopPropagation();adminForceStatus(${s.id},'${ps.prev}')" style="font-size:11px;padding:5px 9px;background:#f5f5f5;color:#666;border:1px solid #ddd">◀ ${ps.text}</button>`;
             if (ns) actionBtns += `<button class="btn" onclick="event.stopPropagation();adminForceStatus(${s.id},'${ns.next}')" style="font-size:11px;padding:5px 9px;background:${ns.bg};color:${ns.color};border:1px solid ${ns.border}">▶ ${ns.text}</button>`;
             actionBtns += `<button class="btn" onclick="event.stopPropagation();openCopyScheduleModal(${s.id})" style="font-size:11px;padding:5px 9px;background:#e3f2fd;color:#1565c0;border:1px solid #90caf9">복사</button><button class="btn btn-outline" onclick="event.stopPropagation();openEditScheduleModal(${s.id})" style="font-size:11px;padding:5px 9px">수정</button><button class="btn" onclick="event.stopPropagation();deleteSchedule(${s.id})" style="font-size:11px;padding:5px 9px;background:#ffebee;color:#c62828;border:1px solid #ffcdd2">삭제</button>`;
             if (isMobile) {
