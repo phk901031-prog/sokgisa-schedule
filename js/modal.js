@@ -5,6 +5,28 @@ function loadFreelancerOptions() {
     const schedSel=el('scheduleFreelancer'), adminSel=el('adminFreelancerSelect');
     if(schedSel){ schedSel.innerHTML='<option value="">선택하세요</option>'; freelancerProfiles.forEach(p=>{ const o=document.createElement('option'); o.value=p.id; o.textContent=p.name; schedSel.appendChild(o); }); }
     if(adminSel){ const cv=adminSel.value; adminSel.innerHTML='<option value="">전체 보기</option>'; freelancerProfiles.forEach(p=>{ const o=document.createElement('option'); o.value=p.id; o.textContent=p.name; adminSel.appendChild(o); }); if(cv) adminSel.value=cv; }
+    const searchInput = el('freelancerSearch');
+    if (searchInput) searchInput.value = '';
+}
+
+// 일정 등록 모달 속기사 검색 필터
+function filterFreelancerSelect(query) {
+    const sel = el('scheduleFreelancer');
+    const q = query.trim().toLowerCase();
+    sel.innerHTML = '<option value="">선택하세요</option>';
+    freelancerProfiles.filter(p => !q || p.name.toLowerCase().includes(q)).forEach(p => {
+        const o = document.createElement('option'); o.value = p.id; o.textContent = p.name;
+        sel.appendChild(o);
+    });
+}
+
+// 알림 보내기 모달 속기사 검색 필터
+function filterPushCheckboxes(query) {
+    const q = query.trim().toLowerCase();
+    el('pushFreelancerCheckboxes').querySelectorAll('label').forEach(label => {
+        const name = label.querySelector('span').textContent.toLowerCase();
+        label.style.display = (!q || name.includes(q)) ? 'flex' : 'none';
+    });
 }
 
 // ========================
