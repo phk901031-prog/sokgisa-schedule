@@ -54,9 +54,14 @@ function renderCalendar() {
         daySchedules = applySearchFilter(daySchedules);
         const dayEl = document.createElement('div');
         const dayOfWeek = new Date(year, month, date).getDay(); // 0=일, 6=토
+        // 불가 날짜 체크: 관리자 → 선택된 속기사, 속기사 → 본인
+        const checkFreelancerId = isAdmin ? selectedFreelancer : (currentUser.role==='freelancer' ? currentUser.id : '');
+        const isUnavail = checkFreelancerId && unavailableDates.some(u => u.freelancer_id===checkFreelancerId && u.date===dateStr);
         dayEl.className = 'calendar-day' + (daySchedules.length ? ' has-event' : '') + (dateStr===todayStr ? ' today' : '');
+        if (isUnavail) dayEl.style.background = '#ffebee';
         const dayNumColor = dateStr===todayStr ? '' : dayOfWeek===6 ? 'color:#2196F3;' : dayOfWeek===0 ? 'color:#f44336;' : '';
         dayEl.innerHTML = `<div class="day-number${dateStr===todayStr?' today-num':''}" style="${dayNumColor}">${date}</div>`;
+        if (isUnavail) { const badge=document.createElement('div'); badge.style.cssText='font-size:9px;color:#c62828;font-weight:700'; badge.textContent='불가'; dayEl.appendChild(badge); }
         if (daySchedules.length) {
             const prev = document.createElement('div'); prev.className='event-preview';
             prev.innerHTML = daySchedules.slice(0,3).map(s=>`<span class="event-dot"></span>${s.freelancer_name.slice(0,2)}-${s.title.replace('교육지원청','')}`).join('<br>');
@@ -66,6 +71,11 @@ function renderCalendar() {
         if (daySchedules.length || isAdmin) {
             dayEl.style.cursor='pointer';
             dayEl.onclick = () => showDateDetail(dateStr, daySchedules);
+        }
+        // 속기사: 불가 날짜 토글
+        if (!isAdmin && currentUser.role==='freelancer') {
+            dayEl.style.cursor='pointer';
+            dayEl.onclick = daySchedules.length ? () => showDateDetail(dateStr, daySchedules) : () => toggleUnavailableDate(dateStr);
         }
         // PC 호버 툴팁 (일정이 있을 때만)
         if (daySchedules.length) {
@@ -101,6 +111,23 @@ function renderCalendar() {
 function removeCalendarTooltip() {
     const t = document.getElementById('calendarTooltip');
     if (t) t.remove();
+}
+
+// 속기사 불가능 날짜 토글
+async function toggleUnavailableDate(dateStr) {
+    const existing = unavailableDates.find(u => u.freelancer_id===currentUser.id && u.date===dateStr);
+    if (existing) {
+        // 해제
+        await sb.from('unavailable_dates').delete().eq('freelancer_id', currentUser.id).eq('date', dateStr);
+        unavailableDates = unavailableDates.filter(u => !(u.freelancer_id===currentUser.id && u.date===dateStr));
+        showToast(`${dateStr} 불가 해제`);
+    } else {
+        // 등록
+        await sb.from('unavailable_dates').insert({ freelancer_id: currentUser.id, date: dateStr });
+        unavailableDates.push({ freelancer_id: currentUser.id, date: dateStr });
+        showToast(`${dateStr} 불가 등록`);
+    }
+    renderCalendar();
 }
 
 function changeMonth(delta) {

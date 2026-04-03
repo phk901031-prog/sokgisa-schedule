@@ -2,7 +2,12 @@
 // ⑥ 데이터 로드 (Supabase → 로컬 캐시)
 // ========================
 async function loadAllData() {
-    await Promise.all([loadSchedules(), loadProfiles()]);
+    await Promise.all([loadSchedules(), loadProfiles(), loadUnavailableDates()]);
+}
+
+async function loadUnavailableDates() {
+    const { data } = await sb.from('unavailable_dates').select('freelancer_id,date');
+    if (data) unavailableDates = data;
 }
 
 async function loadSchedules() {

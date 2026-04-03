@@ -33,3 +33,4 @@ let dateTimePairs    = {};
 let ongoingMeetings  = {};
 let meetingTitlesHistory = [];
 let copyDefaults     = null; // 복사 시 기본값 {time, memo}
+let unavailableDates = []; // 불가능 날짜 목록 [{freelancer_id, date}]

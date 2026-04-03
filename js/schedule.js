@@ -91,6 +91,9 @@ async function addSchedule(event) {
             if (!slots[i].time) { alert(`${d} 날짜의 ${i+1}번째 시간을 설정해주세요.`); return; }
         }
     }
+    // 불가 날짜 경고
+    const unavailDates = selectedDates.filter(d => unavailableDates.some(u => u.freelancer_id===freelancerId && u.date===d));
+    if (unavailDates.length && !confirm(`⚠️ 다음 날짜는 속기사가 불가능으로 등록한 날짜입니다:\n${unavailDates.join(', ')}\n\n그래도 등록하시겠습니까?`)) return;
     // 중복 체크
     const allRows = [];
     selectedDates.forEach(d => {
