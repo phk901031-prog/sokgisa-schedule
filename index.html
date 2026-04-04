@@ -86,6 +86,7 @@
             <div style="display:flex;gap:8px;flex-wrap:wrap">
                 <button class="btn btn-secondary" onclick="refreshData()" style="padding:10px 16px">🔄 새로고침</button>
                 <button class="btn" onclick="openNotificationModal()" style="padding:10px 16px;background:#1976d2;color:#fff;position:relative" id="notifBellBtn">📢 공지사항<span id="notifBadge" style="display:none;position:absolute;top:-4px;right:-4px;background:#f44336;color:#fff;font-size:10px;font-weight:700;width:18px;height:18px;border-radius:50%;line-height:18px;text-align:center">0</span></button>
+                <button class="btn" onclick="openSendPushModal()" style="padding:10px 16px;background:#ff9800;color:#fff">📢 알림 보내기</button>
             </div>
             <button class="btn btn-logout" onclick="handleLogout()">로그아웃</button>
         </div>
@@ -110,7 +111,6 @@
             <div style="display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap">
                 <button class="btn btn-primary" onclick="openAddScheduleModal()">+ 새 일정 등록</button>
                 <button class="btn" onclick="downloadExcel()" style="background:#10b981;color:#fff">📊 엑셀 다운로드</button>
-                <button class="btn" onclick="openSendPushModal()" style="background:#ff9800;color:#fff">📢 알림 보내기</button>
             </div>
         </div>
 
